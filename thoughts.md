@@ -44,3 +44,10 @@ When generating make-entity helpers, we do want to include nil values:
 > index scanning), such as with this or-join https://github.com/juxt/crux/blob/06bc04139efabad5d0fe3dd779e76bd64bb42f46/crux-test/test/crux/query_test.clj#L1830-L1834
 
 https://juxt-oss.zulipchat.com/#narrow/stream/194466-crux/topic/Querying.20for.20entities.20that.20may.20have.20a.20particular.20attribute/near/226542408
+
+# Editors 
+This strategy makes heavy use of generated symbols, and editors have issues resolving these thins.
+
+If you use cursive you can disable unknown symbols via, resolve-as :none
+
+https://github.com/cursive-ide/cursive/issues/2417
