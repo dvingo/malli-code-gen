@@ -15,7 +15,7 @@ use the interceptor pattern.
 ```
 Takes malli schema as input and returns code as data (a list).
 ```clojure
-(execute-chain {::schema MyEntityMalliSchema}
+(io.pedestal.interceptor.chain/execute {::schema MyEntityMalliSchema}
    (schema->resolver)
    (schema->fulcro-query)
    (schema->crux-pull-syntax))
