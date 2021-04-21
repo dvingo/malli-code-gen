@@ -29,7 +29,9 @@ storing graph data in a normalized form.
 
 I would like to support the use of idents as the pointer storage format, but use just a plain uuid for the id of each entity.
 As far as I know the built in crux pull does not support this, this port of the datascript pull does:
+
 https://github.com/dvingo/my-clj-utils/blob/master/src/main/dv/crux_pull.clj#L145
+
 https://github.com/dvingo/my-clj-utils/blob/master/src/main/dv/crux_util.clj#L176
 
 This should be made into a protocol or multi-method to allow open extension of how to map a pointer to an ID to an ID.
