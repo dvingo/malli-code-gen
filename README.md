@@ -1,2 +1,2 @@
 # malli-code-gen
-Define your schema, get helper code.
+Define your schema get free code.
