@@ -21,7 +21,8 @@ Takes malli schema as input and returns code as data (a list).
    (schema->crux-pull-syntax))
 ```
 
-_update_
+*_update_*:
+
 malli of course has a built in solution instead of custom interceptors:
 
 https://github.com/metosin/malli#value-transformation
