@@ -95,9 +95,17 @@ Using global names (fully qualified keywords) in order to generate clojure.spec.
          ::id
          ::description
          [::sub-tasks {:optional true}
+         
+         ;; this is where different malli registries may be very useful.
+         ;; in some contexts (on the frontend for example) we want a nested tree of hashmaps of tasks
+         ;; in others (when persisting to the db) we want refs/idents [::task/id #uuid ""])
+         ;; and when/if we want pathom to traverse the relationship we want a hashmap {::task/id #uuid ""}
+         ;; but we probably don't want to support mixing them together.
+         
            [:vector
            [:or [:ref ::task]
-                [:tuple [:enum ::id] uuid?] [:map [::id]]]]]
+                [:tuple [:enum ::id] uuid?] 
+                [:map [::id]]]]]
           [::db/updated-at {:optional true}]
           [::db/created-at {:optional true}]]})
 
