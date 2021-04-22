@@ -64,6 +64,11 @@ Clojure European Summer Time - Data Driven RAD with Malli, by Arne Brasseur
 
 https://www.youtube.com/watch?v=ww9yR_rbgQs
 
+
+Clojure Remote - Keynote: Designing with Data (Michael Drogalis)
+
+https://youtu.be/kP8wImz-x4w?t=3091
+
 # Editors 
 This strategy makes heavy use of generated symbols, and editors have issues resolving these thins.
 
