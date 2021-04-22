@@ -78,7 +78,8 @@ https://github.com/cursive-ide/cursive/issues/2417
 
 To deal with the fact that vars which are generated within a macro cannot be discovered by editors (code completion, jump to source, doc strings)
 some ideas are:
-- (declare symbol-here)
+
+add: `(declare symbol-here)` in the target namespace for each generated var.
 
 Use the code-gen but still def a var:
 ```clojure
