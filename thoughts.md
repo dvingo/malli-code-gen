@@ -52,13 +52,17 @@ When generating make-entity helpers, we do want to include nil values:
 
 https://juxt-oss.zulipchat.com/#narrow/stream/194466-crux/topic/Querying.20for.20entities.20that.20may.20have.20a.20particular.20attribute/near/226542408
 
-# Inspiration
+# Inspiration & prior art
 
 malli -> clj-kondo config
 
 https://github.com/metosin/malli#clj-kondo
 
 https://github.com/metosin/malli#visualizing-schemas
+
+Clojure European Summer Time - Data Driven RAD with Malli, by Arne Brasseur
+
+https://www.youtube.com/watch?v=ww9yR_rbgQs
 
 # Editors 
 This strategy makes heavy use of generated symbols, and editors have issues resolving these thins.
