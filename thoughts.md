@@ -76,6 +76,19 @@ If you use cursive you can disable unknown symbols via, resolve-as :none
 
 https://github.com/cursive-ide/cursive/issues/2417
 
+To deal with the fact that vars which are generated within a macro cannot be discovered by editors (code completion, jump to source, doc strings)
+some ideas are:
+- (declare symbol-here)
+
+Use the code-gen but still def a var:
+```clojure
+(defresolver my-task-resolver (malli-code-gen/gen-pathom2-resolver MyMalliSchema))
+
+(def create-task (malli-code-gen/gen-crud-create MyMalliSchema))
+(def delete-task (malli-code-gen/gen-crud-delete MyMalliSchema))
+;; etc ....
+```
+
 # Code sketches
 Playing around with recursive schema.
 
