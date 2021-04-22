@@ -87,6 +87,7 @@ Use the code-gen but still def a var:
 
 (def create-task (malli-code-gen/gen-crud-create MyMalliSchema))
 (def delete-task (malli-code-gen/gen-crud-delete MyMalliSchema))
+(s/def ::task (malli-code-gen/gen-clojure-spec MyMalliSchema))
 ;; etc ....
 ```
 
