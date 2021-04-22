@@ -75,3 +75,39 @@ This strategy makes heavy use of generated symbols, and editors have issues reso
 If you use cursive you can disable unknown symbols via, resolve-as :none
 
 https://github.com/cursive-ide/cursive/issues/2417
+
+# Code sketches
+Playing around with recursive schema.
+
+Using global names (fully qualified keywords) in order to generate clojure.spec.alpha specifications.
+
+```clojure
+(ns co.my-org.my-app.task
+  (:require [co.my-org.my-app.task.db :as db]))
+  
+(def registry
+  {::id uuid?
+     ::description string?
+     ::db/updated-at inst?
+     ::db/created-at inst?
+     ::task
+       [:map
+         ::id
+         ::description
+         [::sub-tasks {:optional true}
+           [:vector
+           [:or [:ref ::task]
+                [:tuple [:enum ::id] uuid?] [:map [::id]]]]]
+          [::db/updated-at {:optional true}]
+          [::db/created-at {:optional true}]]})
+
+(m/validate [:schema {:registry registry} ::task]
+  {::id #uuid "514e5101-6212-4aa0-8042-148ca79b1a5a"
+     ::db/updated-at (tick.alpha.api/now)
+     ::sub-tasks [{::id #uuid "514e5101-6212-4aa0-8042-148ca79b1a59"
+                   ::db/created-at (tick.alpha.api/now)
+                   ::description "some description"}
+                  [::id (java.util.UUID/randomUUID)]
+                  {::id (java.util.UUID/randomUUID)}]
+     ::description "some description"})
+```
