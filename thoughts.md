@@ -21,6 +21,12 @@ Takes malli schema as input and returns code as data (a list).
    (schema->crux-pull-syntax))
 ```
 
+_update_
+malli of course has a built in solution instead of custom interceptors:
+
+https://github.com/metosin/malli#value-transformation
+
+
 This relies on the structure of your data.
 
 The \*/id attribute of any entity you are defining schema for is special in that its value will be used as a pointer when
@@ -44,6 +50,14 @@ When generating make-entity helpers, we do want to include nil values:
 > index scanning), such as with this or-join https://github.com/juxt/crux/blob/06bc04139efabad5d0fe3dd779e76bd64bb42f46/crux-test/test/crux/query_test.clj#L1830-L1834
 
 https://juxt-oss.zulipchat.com/#narrow/stream/194466-crux/topic/Querying.20for.20entities.20that.20may.20have.20a.20particular.20attribute/near/226542408
+
+# Inspiration
+
+malli -> clj-kondo config
+
+https://github.com/metosin/malli#clj-kondo
+
+https://github.com/metosin/malli#visualizing-schemas
 
 # Editors 
 This strategy makes heavy use of generated symbols, and editors have issues resolving these thins.
