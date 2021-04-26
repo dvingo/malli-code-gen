@@ -134,3 +134,72 @@ Using global names (fully qualified keywords) in order to generate clojure.spec.
                   {::id (java.util.UUID/randomUUID)}]
      ::description "some description"})
 ```
+
+# Desired output
+
+Given a task with the following malli schema:
+
+```clojure
+  {::id uuid?
+     ::description string?
+     ::duration  [:fn tick.alpha.api/duration?]
+     ;; global tasks show up for all users
+     ::global?  boolean?
+     ::db/updated-at inst?
+     ::db/created-at inst?
+     ::task
+       [:map
+         ::id
+         ::description
+         [::global {:optional true}]
+         [::sub-tasks {:optional true}
+           [:vector [:ref ::task]]]
+         [::db/updated-at {:optional true}]
+         [::db/created-at {:optional true}]]})
+ ```
+
+## Clojure.spec.alpha 
+
+Generate clojure specs, something like:
+
+```clojure
+(gen-clojure-spec-alpha [:schema {:registry registry} ::task])
+```
+
+(>def ::task any?)
+(>def :task/id uuid?)
+(>def :task/description string?)
+(>def :task/duration tick.alpha.api/duration?)
+(>def :task/subtasks (s/nilable (s/coll-of ::task :type vector?)))
+(>def :task/global? (s/nilable boolean?))
+(>def ::task (s/keys :req [::id ::description ::duration] :opt [::global ::db/created-at ::db/updated-at ::subtasks]]))
+
+## Pull vector
+
+```clojure
+(defn task-pull-vector 
+  [subtasks-depth]
+  [::task/id
+   ::task/description
+   ::task/duration
+   ::task/global?
+   {::task/subtasks (or depth '...)}
+   ::db/updated-at
+   ::db/created-at])
+```
+
+Anywhere there is recursion we will want to parameterize the pull expression.
+
+## Pathom resolver
+
+## Fulcro query
+
+## DB helpers
+
+create
+
+read 
+
+update
+
+delete
