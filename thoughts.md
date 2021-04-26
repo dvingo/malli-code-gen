@@ -166,6 +166,7 @@ Generate clojure specs, something like:
 (gen-clojure-spec-alpha [:schema {:registry registry} ::task])
 ```
 
+```clojure
 (>def ::task any?)
 (>def :task/id uuid?)
 (>def :task/description string?)
@@ -173,6 +174,7 @@ Generate clojure specs, something like:
 (>def :task/subtasks (s/nilable (s/coll-of ::task :type vector?)))
 (>def :task/global? (s/nilable boolean?))
 (>def ::task (s/keys :req [::id ::description ::duration] :opt [::global ::db/created-at ::db/updated-at ::subtasks]]))
+```
 
 ## Pull vector
 
