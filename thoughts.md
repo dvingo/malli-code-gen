@@ -185,7 +185,7 @@ Generate clojure specs, something like:
    ::task/description
    ::task/duration
    ::task/global?
-   {::task/subtasks (or depth '...)}
+   {::task/subtasks (or subtasks-depth '...)}
    ::db/updated-at
    ::db/created-at])
 ```
