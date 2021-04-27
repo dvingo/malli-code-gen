@@ -1,4 +1,6 @@
-(ns malli-code-gen.gen-eql)
+(ns malli-code-gen.gen-eql
+  (:require [malli.util :as mu]
+            [malli.core :as m]))
 
 
 (def registry:main
@@ -58,17 +60,72 @@
      :id      3,
      :gist    ""})
 
+(mu/to-map-syntax spec:task)
 
+(m/type spec:task)
+(m/type schema:task)
+
+
+(mu/to-map-syntax schema:task)
 
 (defn map->eql-pull-vector
   "Given a map spec – returns a query vector
   Crux pull https://opencrux.com/reference/queries.html#pull"
-  [et-spec]
-  (let [[spec-type & props-specs] et-spec]
-    (assert (= :map spec-type) "Expects a map spec")
-    (mapv first props-specs)))
+  ([et-spec] (map->eql-pull-vector et-spec {:mcg/max-nest 3}))
+  ([et-spec
+    {:mcg/keys [root-schema max-nest cur-nest]
+     :as options
+     :or {max-nest 3
+          cur-nest 0}}]
+   (assert (#{:map ::m/schema} (m/type et-spec)) "Expecting a :map spec")
+   (let [root-schema (or root-schema et-spec)
+         props-specs (m/children et-spec)
+         is-prop-atomic?
+         (fn [])
+         entry->pull-item
+         (fn [[e-name options schema :as entry]]
+           e-name)]
+     (mapv entry->pull-item props-specs))))
 
 
 (assert
   (= [:goog/id :id :gist] (map->eql-pull-vector spec:task)))
 
+
+(defn schema->eql-pull
+  "Generates an EQL pull vector from a schema"
+  [schema]
+  (assert (#{:schema ::m/schema} (m/type schema)) "Expecting a schema")
+  (let [schema* (m/schema schema)
+        map-schema (m/deref (m/deref schema*))]
+    (map->eql-pull-vector
+      map-schema
+      {:mcg/root-schema schema*
+       :mcg/max-nest 3})))
+
+(schema->eql-pull schema:task)
+
+
+(-> (m/children (m/deref (m/deref schema:task)))
+    (first)
+    (nth 0)
+    (type))
+
+(-> (m/type (m/deref (m/deref schema:task))))
+
+(-> (m/deref (m/deref schema:task))
+    (m/entries))
+
+(type (first (m/children schema:task)))
+
+(m/children schema:task)
+
+(defn task-pull-vector
+  [subtasks-depth]
+  [::id
+   ::description
+   ::duration
+   ::global?
+   {::subtasks (or subtasks-depth '...)}
+   ::updated-at
+   ::created-at])
