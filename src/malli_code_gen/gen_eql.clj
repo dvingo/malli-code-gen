@@ -1,6 +1,11 @@
 (ns malli-code-gen.gen-eql
+  "Generate EQL pull vectors from schemas
+
+  EQL ref https://github.com/edn-query-language/eql#eql-for-selections"
   (:require [malli.util :as mu]
             [malli.core :as m]))
+
+; https://github.com/edn-query-language/eql#eql-for-selections
 
 
 (def registry:main
@@ -42,11 +47,6 @@
    {:registry registry:main}
    ::task])
 
-(def schema:user
-  [:schema
-   {:registry registry:main}
-   ::user])
-
 (def spec:task
   [:map
    [:goog/id [:qualified-keyword {:namespace :goog}]]
@@ -54,19 +54,20 @@
    [:gist string?]])
 
 
-#_(m/explain
-    spec:task
-    {:goog/id :goog/thing
-     :id      3,
-     :gist    ""})
 
-(mu/to-map-syntax spec:task)
+(defn is-prop-atomic? [prop-name map-schema root-schema]
+  (prn (m/type map-schema))
+  (assert (= :map (m/type map-schema)))
+  (let [prop-schema (mu/get map-schema prop-name)
+        schema? (= ::m/schema (m/type prop-schema))
+        prop-schema (cond-> prop-schema schema? m/deref)]
+    true))
 
-(m/type spec:task)
-(m/type schema:task)
-
-
-(mu/to-map-syntax schema:task)
+(m/type
+  (is-prop-atomic?
+    ::id
+    (m/deref (m/deref schema:task))
+    nil))
 
 (defn map->eql-pull-vector
   "Given a map spec – returns a query vector
@@ -80,11 +81,23 @@
    (assert (#{:map ::m/schema} (m/type et-spec)) "Expecting a :map spec")
    (let [root-schema (or root-schema et-spec)
          props-specs (m/children et-spec)
-         is-prop-atomic?
-         (fn [])
+
          entry->pull-item
-         (fn [[e-name options schema :as entry]]
-           e-name)]
+         (fn [[^keyword e-name
+               ^map options
+               ^malli.core/schema schema
+               :as entry]]
+           (if (is-prop-atomic? e-name schema root-schema)
+             e-name
+             (let [can-nest? (< cur-nest max-nest)]
+               (if can-nest?
+                 {e-name (map->eql-pull-vector
+                           schema
+                           {:mcg/root-schema root-schema
+                            :mcg/cur-nest (inc cur-nest)
+                            :mcg/max-nest max-nest})}
+                 e-name))))]
+
      (mapv entry->pull-item props-specs))))
 
 
@@ -105,11 +118,13 @@
 
 (schema->eql-pull schema:task)
 
+(m/type (m/deref (m/deref schema:task)))
 
-(-> (m/children (m/deref (m/deref schema:task)))
-    (first)
-    (nth 0)
-    (type))
+(m/deref
+  (mu/get
+    (m/deref (m/deref schema:task))
+    ::id))
+
 
 (-> (m/type (m/deref (m/deref schema:task))))
 
