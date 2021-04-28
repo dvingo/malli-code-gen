@@ -1,4 +1,4 @@
-(ns malli-play
+(ns dan-play
   (:require
     [malli.clj-kondo :as mk]
     [malli.core :as m]
@@ -108,53 +108,9 @@
 
 (comment
   (m/walk
-    schema:task
+    (m/deref (m/deref schema:task))
     (m/schema-walker
       (fn [schema]
-        (doto schema prn))))
-
-  (m/walk
-    schema:task
-    (m/schema-walker
-      (fn [schema]
-        (prn ::schema schema)
-        schema))))
-
-(defn start-crux! []
-  (letfn [(kv-store [dir]
-            {:kv-store {:crux/module 'crux.rocksdb/->kv-store
-                        :db-dir      (io/file dir)
-                        :sync?       true}})]
-    (crux/start-node
-      {}
-      #_{:crux/tx-log              (kv-store "data/dev/tx-log")
-         :crux/document-store      (kv-store "data/dev/doc-store")
-         :crux/index-store         (kv-store "data/dev/index-store")})))
-
-(comment
-  (defonce crux-node (start-crux!)))
-
-(defn stop-crux! []
-  (.close crux-node))
-
-(def task-eql
-  (mcg/schema->eql schema:task))
-
-(comment
-  (crux/submit-tx
-    crux-node
-    [[:crux.tx/put
-      {:crux.db/id   (UUID/randomUUID)
-       ::id          :local-id
-       ::created-at  #inst"2020-03-20"
-       :sub-tasks    [#uuid"20fa70ab-d86e-4a02-8f72-2a8d1ce81dd7"]
-       ::description "A parent task"}]])
-
-  (crux/q
-     (crux/db crux-node)
-     {:find  [(list 'pull 'e (conj task-eql :crux.db/id))]
-      :where '[[e :crux.db/id]]}))
-
         (doto schema prn)))))
 
 

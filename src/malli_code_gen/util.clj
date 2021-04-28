@@ -14,6 +14,5 @@
     (if reg-def
       (m/deref (m/schema [:schema root-props reffed-name])))))
 
-
-(m/schema
-  (get-from-registry ts1/schema:task ::ts1/task))
+(comment
+  (m/schema (get-from-registry ts1/schema:task ::ts1/task)))
