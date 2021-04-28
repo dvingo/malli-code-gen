@@ -36,7 +36,8 @@
 
 
 (def schema:task
-  "spec with external registry"
+  "spec with external registry
+  satisfies Schema"
   [:schema
    {:registry registry:main}
    ::task])

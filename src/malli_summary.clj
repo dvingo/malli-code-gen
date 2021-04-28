@@ -142,3 +142,21 @@
     (first)
     (m/type)
     (= :ref))
+
+; when I got to [:ref ::task], the ::task wasn't a schema,
+; but a simple keyword
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -25,7 +25,7 @@
   (m/deref (m/deref schema:task)))
 
 (defn is-prop-atomic? [prop-name et-schema root-schema]
-  (prn ::is-atomic prop-name et-schema root-schema)
+  ;(prn ::is-atomic prop-name et-schema root-schema)
   #_(assert (= :map (m/type et-schema))
             (str et-schema " isn't a :map, but a " (m/type et-schema)))
   (if-not (composite-schema-types (m/type et-schema))
@@ -42,7 +42,6 @@
 
 (defn is-ref-coll?
   ; fixme add maps support
-  ""
   [prop-name et-schema root-schema]
   (let [prop-schema (m/deref (mu/get et-schema prop-name))
         is-coll? (list-like-types (m/type prop-schema))]
@@ -80,7 +79,7 @@
      :as       options
      :or       {max-nest 3
                 cur-nest 0}}]
-   (prn ::pull-vector et-schema)
+   ;(prn ::pull-vector et-schema)
    (def e1 et-schema)
    (assert (composite-schema-types (m/type et-schema)) "Expecting a composite schema type")
    (let [root-schema (or root-schema et-schema)
@@ -92,18 +91,35 @@
                :as entry]]
            (if (is-prop-atomic? spec-item-id et-schema root-schema)
              spec-item-id
+
+             ; nesting operation
              (if-let [can-nest? (< cur-nest max-nest)]
                (let [ref-coll? (is-ref-coll? spec-item-id et-schema root-schema)
+                     map? (= :map (m/type (m/deref spec-item-schema)))
                      reffed-name (if ref-coll? (ref-coll->reffed spec-item-schema))
                      reffed-schema (if reffed-name (u/get-from-registry root-schema reffed-name))]
-                 (if ref-coll?
+
+                 (cond
+
+                   map?
+                   {spec-item-id
+                    (map->eql-pull-vector
+                      (m/deref spec-item-schema)
+                      {:mcg/root-schema root-schema
+                       :mcg/cur-nest    (inc cur-nest)
+                       :mcg/max-nest    max-nest})}
+
+                   ref-coll?
                    {spec-item-id
                     (map->eql-pull-vector
                       (m/deref reffed-schema)
                       {:mcg/root-schema root-schema
                        :mcg/cur-nest    (inc cur-nest)
                        :mcg/max-nest    max-nest})}
+
+                   :else
                    spec-item-id))
+
                spec-item-id)))]
 
      (mapv entry->pull-item (m/children et-schema)))))
@@ -127,29 +143,21 @@
       {:mcg/root-schema schema*
        :mcg/max-nest    3})))
 
-(schema->eql-pull schema:task)
 
-(m/deref
-  (mu/get
-    (m/deref (m/deref schema:task))
-    ::ts1/id))
+(comment
 
+  (schema->eql-pull schema:task)
 
-(-> (m/type (m/deref (m/deref schema:task))))
+  (m/deref
+    (mu/get
+      (m/deref (m/deref schema:task))
+      ::ts1/id))
 
-(-> (m/deref (m/deref schema:task))
-    (m/entries))
+  (-> (m/type (m/deref (m/deref schema:task))))
 
-(type (first (m/children schema:task)))
+  (-> (m/deref (m/deref schema:task))
+      (m/entries))
 
-(m/children schema:task)
+  (type (first (m/children schema:task)))
 
-(defn task-pull-vector
-  [subtasks-depth]
-  [::id
-   ::description
-   ::duration
-   ::global?
-   {::subtasks (or subtasks-depth '...)}
-   ::updated-at
-   ::created-at])
+  (m/children schema:task))
