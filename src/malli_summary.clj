@@ -146,6 +146,8 @@
 ; when I got to [:ref ::task], the ::task wasn't a schema,
 ; but a simple keyword
 
+; I may have underexplored schema walk
+; but in our case we would benefit from the post order tra
 
 
 

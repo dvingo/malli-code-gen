@@ -2,7 +2,12 @@
   (:require [malli.core :as m]
             [malli.clj-kondo :as mk]
             [malli.util :as mu]
-            [malli.transform :as mt]))
+            [crux.api :as crux]
+            [malli-code-gen.api :as mcg]
+            [malli.transform :as mt]
+            [clojure.java.io :as io]
+            [crux.api :as crux])
+  (:import (java.util UUID)))
 
 ; aave – malli powered code checking for Clojure.
 ; https://github.com/teknql/aave
@@ -95,26 +100,63 @@
 (mu/to-map-syntax
   schema:task)
 
-(mu/find-first
-  schema:task
-  (fn [schema path options]
-    (prn path)
-    (-> schema m/properties :e/type)))
+(comment
+  (mu/find-first
+    schema:task
+    (fn [schema path options]
+      (prn path)
+      (-> schema m/properties :e/type))))
 
 (mu/required-keys schema:task)
 (mu/optional-keys schema:task)
 
 
-(m/walk
-  schema:task
-  (m/schema-walker
-    (fn [schema]
-      (doto schema prn))))
+(comment
+  (m/walk
+    schema:task
+    (m/schema-walker
+      (fn [schema]
+        (doto schema prn))))
 
+  (m/walk
+    schema:task
+    (m/schema-walker
+      (fn [schema]
+        (prn ::schema schema)
+        schema))))
 
-(m/walk
-  schema:task
-  (m/schema-walker
-    (fn [schema]
-      (prn ::schema schema)
-      schema)))
+(defn start-crux! []
+  (letfn [(kv-store [dir]
+            {:kv-store {:crux/module 'crux.rocksdb/->kv-store
+                        :db-dir      (io/file dir)
+                        :sync?       true}})]
+    (crux/start-node
+      {}
+      #_{:crux/tx-log              (kv-store "data/dev/tx-log")
+         :crux/document-store      (kv-store "data/dev/doc-store")
+         :crux/index-store         (kv-store "data/dev/index-store")})))
+
+(comment
+  (defonce crux-node (start-crux!)))
+
+(defn stop-crux! []
+  (.close crux-node))
+
+(def task-eql
+  (mcg/schema->eql schema:task))
+
+(comment
+  (crux/submit-tx
+    crux-node
+    [[:crux.tx/put
+      {:crux.db/id   (UUID/randomUUID)
+       ::id          :local-id
+       ::created-at  #inst"2020-03-20"
+       :sub-tasks    [#uuid"20fa70ab-d86e-4a02-8f72-2a8d1ce81dd7"]
+       ::description "A parent task"}]])
+
+  (crux/q
+     (crux/db crux-node)
+     {:find  [(list 'pull 'e (conj task-eql :crux.db/id))]
+      :where '[[e :crux.db/id]]}))
+
