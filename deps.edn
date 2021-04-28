@@ -2,4 +2,6 @@
  {metosin/malli {:mvn/version "0.4.0"}}
 
  :aliases
- {:test {:extra-paths ["test"]}}}
+ {:dev  {:extra-paths ["dev"]
+         :jvm-opts    ["-Dmalli.registry/type=custom"]}
+  :test {:extra-paths ["test"]}}}
