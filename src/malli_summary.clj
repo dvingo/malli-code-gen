@@ -88,3 +88,57 @@
 
 
 ; can transform into JSON/Swagger Schema and
+
+
+; in a REPL malli stuff looks like Clojure data, but it isn't
+; it's malli's data types and you need malli.core and malli.util
+; to operate on them
+
+
+; malli.core/walk on a :schema schema works "dumb"
+; use m/deref m/deref to convert :schema to :map
+
+
+; What I tried
+(m/walk
+  schema:task
+  (m/schema-walker
+    (fn [schema]
+      (prn schema)
+      schema)))
+
+; what I needed
+; (why is it double deref? * laughs in Russian *)
+(m/walk
+  (m/deref (m/deref schema:task))
+  (m/schema-walker
+    (fn [schema]
+      (prn schema)
+      schema)))
+
+; I didn't define subtasks in a registry, so they didn't appear in walking
+
+; walking doesn't seem more efficient than mapping.
+
+;walking over schema with fully defined properties is the same as just mapping over it.
+;If you don't define ::subtasks in the registry then yes, you can see [:vector [:ref ::task]] in the walking f, but you won't see [:subtasks [:vector]]
+
+;I'm sticking with map and recursion for the time being and I'll ask malli devs to review this.
+
+
+(-> (mu/get schema-map:task ::ts1/subtasks)
+    (ref-coll->reffed)
+    (m/schema?))
+
+(m/properties schema:task)
+
+
+(-> (mu/get schema-map:task ::ts1/subtasks)
+    (m/deref))
+
+(-> (mu/get schema-map:task ::ts1/subtasks)
+    (m/deref)
+    (m/children)
+    (first)
+    (m/type)
+    (= :ref))
