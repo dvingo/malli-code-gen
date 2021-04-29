@@ -320,3 +320,11 @@ read
 update
 
 delete
+
+
+## Domain assumptions / questions
+Should we consider schema migrations?
+If we change field's name or delete one. Thn we update our spec files. Are we doing PLOP?
+Or we will create a new set of schemas?
+Probably initial product should leave migration in the hands of the end user, but if we are going for file
+based schemas and file emission – then maybe consider design for versioning.
