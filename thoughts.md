@@ -278,7 +278,7 @@ Some attributes elided for clarity.
   {:query (fn [_]
     [::task/id ::task/description ::task/duration ::task/global? 
       {::task/sub-tasks '...} ;; <-- value of :recur above
-      {::task/notes (com.fulcrologic.fulcro.component/get-query Note)
+      {::task/notes (com.fulcrologic.fulcro.components/get-query Note)
       ::db/updated-at ::db/created-at}
       ]}
 ```
