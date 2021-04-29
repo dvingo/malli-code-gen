@@ -64,13 +64,16 @@ Clojure European Summer Time - Data Driven RAD with Malli, by Arne Brasseur
 
 https://www.youtube.com/watch?v=ww9yR_rbgQs
 
-
 Clojure Remote - Keynote: Designing with Data (Michael Drogalis)
 
 https://youtu.be/kP8wImz-x4w?t=3091
 
+Similar idea, schema stored in datascript instead of malli:
+
+https://vvvvalvalval.github.io/posts/2018-07-23-datascript-as-a-lingua-franca-for-domain-modeling.html
+
 # Editors 
-This strategy makes heavy use of generated symbols, and editors have issues resolving these thins.
+This strategy makes heavy use of generated symbols, and editors have issues resolving these things.
 
 If you use cursive you can disable unknown symbols via, resolve-as :none
 
@@ -194,11 +197,129 @@ Anywhere there is recursion we will want to parameterize the pull expression.
 
 ## Pathom resolver
 
+pathom2 resolvers (and mutations) are maps, we can generate this form which would allow users to assoc and dissoc properties 
+as they see fit and even wrap the generated function that does the mutation and resolution.
+
+We probably don't want to generate code, but this is something to keep in mind for enabling a reloaded workflow for resolvers
+and mutations:
+
+Note from Tony Kay via clojurians slack on how to get reload friendly resolvers:
+
+> Here’s what I do: Make your own macro for defresolver and defmutation that do the following:
+
+    Copy the body into a function with an alternate symbol (e.g. my-resolver-impl)
+    Emit the resolver with the desired symbol, but have it just call the function.
+
+Now when you reload the resolver it redefines the symbol for the generated function, which is what the embedded resolver will call.
+
+```clojure
+(defmacro defresolver [& args]
+  (let [{:keys [sym arglist doc config body]} (futil/conform! ::mutation-args args)
+        internal-fn-sym (symbol (str (name sym) "__internal-fn__"))
+        config          (dissoc config :check :ex-return)
+        env-arg         (first arglist)
+        params-arg      (second arglist)]
+    `(do
+       ;; Use this internal function so we can dynamically update a resolver in
+       ;; dev without having to restart the whole pathom parser.
+       (defn ~internal-fn-sym [env# params#]
+         (let [~env-arg env#
+               ~params-arg params#
+               result# (do ~@body)]
+           result#))
+       (pc/defresolver ~sym [env# params#]
+         ~config
+         (~internal-fn-sym env# params#)))))
+```
+
 ## Fulcro query
+
+For sake of example, imagine adding to-many notes to the task above.
+
+Pretty much the same as the pull expression, but any joins use a component
+
+Some attributes elided for clarity.
+
+```clojure
+(declare Note)
+{::id uuid?
+ ::description string?
+ ::duration  [:fn tick.alpha.api/duration?]
+ ::note/content string? 
+ ::note/id uuid?
+ ::note [:map ::note/content ::note/id]
+ ::task
+  [:map
+    ;; Proably use properties to specify a UI component name?
+    [::notes {:optional true ::fulcro-component Note} ;; <-- something like this to specify the fulcro component to join with.
+      [:vector [:ref ::note]]
+    [::sub-tasks {:optional true :recur '...} ;; <-- allows specifying recursion depth (could also be an integer).
+      [:vector [:ref ::task]]]
+    [::db/updated-at {:optional true}]
+    [::db/created-at {:optional true}]]})
+```
+
+```clojure
+(defsc Note [_ _]
+  {:query (fn [_] (malli-gen/gen-fulcro-query ::note)}
+
+;; expands to:
+ 
+(defsc Note [_ _]
+  {:query (fn [_] [::note/id ::note/content]}
+  
+;; -----------
+
+(defsc Task [_ _]
+  {:query (fn [_] (malli-gen/gen-fulcro-query ::task)}
+  
+;; expands to:
+  
+(defsc Task [_ _]
+  {:query (fn [_]
+    [::task/id ::task/description ::task/duration ::task/global? 
+      {::task/sub-tasks '...} ;; <-- value of :recur above
+      {::task/notes (com.fulcrologic.fulcro.component/get-query Note)
+      ::db/updated-at ::db/created-at}
+      ]}
+```
+
+This allows a user to add extra props:
+```clojure
+:query (fn [_] (conj  (malli-gen/gen-fulcro-query ::note) :ui/open? :ui/editing?) ;; etc
+```
+
+And if you have a use-case where you want to remove some props you can use a schema transformer
+`(mu/dissoc ::prop)` before calling gen-fulcro-query to do so.
 
 ## DB helpers
 
 create
+
+Current thought is to generate clojure.spec.alpha specs solely for guardrails useage. Ideally leverage aave to not need to do this.
+Idea for output:
+```clojure
+(>def ::task);;; see spec above
+(>defn create-task 
+  [m] 
+  [map? => ::task]
+  (let [task (-> m m/default-value-transformer optional->nil-transformer)]
+    task
+  ))
+```
+
+the fictional `optional->nil-transformer` adds all properties specified in the schema but sets missing props to nil to improve crux query performance.
+
+Sample invocation:
+
+```clojure
+(create-task {::task/description "description"})
+; =>
+{::task/id #uuid ".."
+ ::task/description "description"
+ ...
+ }
+```
 
 read 
 
