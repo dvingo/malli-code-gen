@@ -210,6 +210,8 @@ defmutation macro:
 https://github.com/wilkerlucio/pathom/blob/master/src/com/wsscode/pathom/connect.cljc#L1774
 
 ```clojure
+;; Example code a user would author:
+
 (pc/defresolver task-resolver [{:keys [crux-node {{:keys [params]} :ast}]} input]
  {::pc/output (malli-gen/gen-pathom-output-vector ::task)
   ::pc/transform pc/transform-batch-resolver}
