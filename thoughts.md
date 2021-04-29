@@ -241,7 +241,6 @@ Pretty much the same as the pull expression, but any joins use a component
 Some attributes elided for clarity.
 
 ```clojure
-(declare Note)
 {::id uuid?
  ::description string?
  ::duration  [:fn tick.alpha.api/duration?]
@@ -251,7 +250,7 @@ Some attributes elided for clarity.
  ::task
   [:map
     ;; Proably use properties to specify a UI component name?
-    [::notes {:optional true ::fulcro-component Note} ;; <-- something like this to specify the fulcro component to join with.
+    [::notes {:optional true ::fulcro-component 'my-app/Note} ;; <-- something like this to specify the fulcro component to join with.
       [:vector [:ref ::note]]
     [::sub-tasks {:optional true :recur '...} ;; <-- allows specifying recursion depth (could also be an integer).
       [:vector [:ref ::task]]]
