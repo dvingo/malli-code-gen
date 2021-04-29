@@ -200,36 +200,29 @@ Anywhere there is recursion we will want to parameterize the pull expression.
 pathom2 resolvers (and mutations) are maps, we can generate this form which would allow users to assoc and dissoc properties 
 as they see fit and even wrap the generated function that does the mutation and resolution.
 
-We probably don't want to generate code, but this is something to keep in mind for enabling a reloaded workflow for resolvers
-and mutations:
+defresolver macro:
+https://github.com/wilkerlucio/pathom/blob/master/src/com/wsscode/pathom/connect.cljc#L1637
 
-Note from Tony Kay via clojurians slack on how to get reload friendly resolvers:
+resolver fn:
+https://github.com/wilkerlucio/pathom/blob/master/src/com/wsscode/pathom/connect.cljc#L1540
 
-> Here’s what I do: Make your own macro for defresolver and defmutation that do the following:
-
-    Copy the body into a function with an alternate symbol (e.g. my-resolver-impl)
-    Emit the resolver with the desired symbol, but have it just call the function.
-
-Now when you reload the resolver it redefines the symbol for the generated function, which is what the embedded resolver will call.
+defmutation macro:
+https://github.com/wilkerlucio/pathom/blob/master/src/com/wsscode/pathom/connect.cljc#L1774
 
 ```clojure
-(defmacro defresolver [& args]
-  (let [{:keys [sym arglist doc config body]} (futil/conform! ::mutation-args args)
-        internal-fn-sym (symbol (str (name sym) "__internal-fn__"))
-        config          (dissoc config :check :ex-return)
-        env-arg         (first arglist)
-        params-arg      (second arglist)]
-    `(do
-       ;; Use this internal function so we can dynamically update a resolver in
-       ;; dev without having to restart the whole pathom parser.
-       (defn ~internal-fn-sym [env# params#]
-         (let [~env-arg env#
-               ~params-arg params#
-               result# (do ~@body)]
-           result#))
-       (pc/defresolver ~sym [env# params#]
-         ~config
-         (~internal-fn-sym env# params#)))))
+(pc/defresolver task-resolver [{:keys [crux-node {{:keys [params]} :ast}]} input]
+ {::pc/output (malli-gen/gen-pathom-output-vector ::task)
+  ::pc/transform pc/transform-batch-resolver}
+  (let [pull-depth (or (:pull-depth params) 5)]
+   (mapv (fn [task-id] (generated-task-pull crux-node task-id) input)))
+   
+ ;; the generated pull line is generated from another helper for crux pull.
+ 
+ ;; interesting part:
+  (malli-gen/gen-pathom-output-vector ::task)
+  ;; =>
+  [::task/id ::task/description ::task/duration {::task/sub-tasks [::task/id]}
+   {::task/notes [::note/id]} ::db/created-at ::db/updated-at]
 ```
 
 ## Fulcro query
