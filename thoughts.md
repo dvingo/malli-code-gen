@@ -72,6 +72,11 @@ Similar idea, schema stored in datascript instead of malli:
 
 https://vvvvalvalval.github.io/posts/2018-07-23-datascript-as-a-lingua-franca-for-domain-modeling.html
 
+
+Scrap Your Query Boilerplate With Specql – Tatu Tarvainen
+
+https://www.youtube.com/watch?v=qEXNyZ5FJN4&list=PLetHPRQvX4a9iZk-buMQfdxZm72UnP3C9&index=4
+
 # Editors 
 This strategy makes heavy use of generated symbols, and editors have issues resolving these things.
 
@@ -290,7 +295,10 @@ And if you have a use-case where you want to remove some props you can use a sch
 
 create
 
-Current thought is to generate clojure.spec.alpha specs solely for guardrails useage. Ideally leverage aave to not need to do this.
+Current thought is to generate clojure.spec.alpha specs solely for guardrails usage. Ideally leverage aave to not need to do this.
+Could try this:
+https://github.com/setzer22/malli-instrument
+
 Idea for output:
 ```clojure
 (>def ::task);;; see spec above
