@@ -35,14 +35,14 @@
      :e/address
            [:map
             {:registry {:e.address/street string?
-                        :e.address/zip string?}}
+                        :e.address/zip    string?}}
             [:street :e.address/street]]}}
    :e/address])
 
 (def spec:task--closed
   [:map
-   {:closed true
-    :task.meta/title "Task %s"
+   {:closed            true
+    :task.meta/title   "Task %s"
     :task.meta/summary "summary for a task"}
    [:e/id pos-int?]
 
@@ -66,9 +66,9 @@
   (mt/default-value-transformer)
   (mt/json-transformer))
 
-(m/walk)
+;(m/walk)
 
-(m/schema-walker)
+;(m/schema-walker)
 
 
 ; malli provider can infer specs from values
@@ -100,21 +100,22 @@
 
 
 ; What I tried
-(m/walk
-  schema:task
-  (m/schema-walker
-    (fn [schema]
-      (prn schema)
-      schema)))
+(comment
+  (m/walk
+    schema:task
+    (m/schema-walker
+      (fn [schema]
+        (prn schema)
+        schema)))
 
-; what I needed
-; (why is it double deref? * laughs in Russian *)
-(m/walk
-  (m/deref (m/deref schema:task))
-  (m/schema-walker
-    (fn [schema]
-      (prn schema)
-      schema)))
+  ; what I needed
+  ; (why is it double deref? * laughs in Russian *)
+  (m/walk
+    (m/deref (m/deref schema:task))
+    (m/schema-walker
+      (fn [schema]
+        (prn schema)
+        schema))))
 
 ; I didn't define subtasks in a registry, so they didn't appear in walking
 
@@ -126,39 +127,26 @@
 ;I'm sticking with map and recursion for the time being and I'll ask malli devs to review this.
 
 
-(-> (mu/get schema-map:task ::ts1/subtasks)
+(comment
+  (-> (mu/get schema-map:task ::ts1/subtasks)
     (ref-coll->reffed)
     (m/schema?))
 
-(m/properties schema:task)
+  (m/properties schema:task)
 
 
-(-> (mu/get schema-map:task ::ts1/subtasks)
+  (-> (mu/get schema-map:task ::ts1/subtasks)
     (m/deref))
 
-(-> (mu/get schema-map:task ::ts1/subtasks)
+  (-> (mu/get schema-map:task ::ts1/subtasks)
     (m/deref)
     (m/children)
     (first)
     (m/type)
-    (= :ref))
+    (= :ref)))
 
 ; when I got to [:ref ::task], the ::task wasn't a schema,
 ; but a simple keyword
 
 ; I may have underexplored schema walk
 ; but in our case we would benefit from the post order tra
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,9 +1,24 @@
-{:deps
- {metosin/malli {:mvn/version "0.4.0"}}
+{:paths
+ ["src/main"]
+
+ :deps
+ {metosin/malli {:mvn/version "0.5.0"}}
 
  :aliases
- {:test {:extra-paths ["test"]}
-  :dev {:extra-deps {juxt/crux-core {:mvn/version "21.04-1.16.0-beta"}
-                     juxt/crux-rocksdb {:mvn/version "21.04-1.16.0-beta"}}
-        :extra-paths ["dev" "test"]}}}
-        ;:jvm-opts    ["-Dmalli.registry/type=custom"]}}}
+ {:test
+  {:extra-paths ["src/test"]}
+
+  :run-tests
+  {:extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                           :sha     "b6b3193fcc42659d7e46ecd1884a228993441182"}}
+   :main-opts  ["-m" "cognitect.test-runner" "-d" "src/test"]}
+
+  :custom-malli-registry
+  {:jvm-opts ["-Dmalli.registry/type=custom"]}
+
+  :dev
+  {:extra-deps  {juxt/crux-core      {:mvn/version "21.04-1.16.0-beta"}
+                 juxt/crux-rocksdb   {:mvn/version "21.04-1.16.0-beta"}
+                 org.slf4j/slf4j-nop {:mvn/version "2.0.0-alpha1"}}
+
+   :extra-paths ["src/dev"]}}}

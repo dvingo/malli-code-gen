@@ -11,7 +11,8 @@
   [?schema]
   (let [schema (m/schema ?schema)]
     (if (and (satisfies? m/RefSchema schema) (-> schema m/deref m/type (= ::m/schema)))
-      ?schema [:schema {:registry {::schema ?schema}} ?schema])))
+      ?schema
+      [:schema {:registry {::schema ?schema}} ?schema])))
 
 (defn -collect
   "huh?
@@ -63,12 +64,16 @@
 (defn transform
   ([?schema] (transform ?schema nil))
   ([?schema options]
+   (println "in transform")
    (let [registry (-> ?schema (m/schema options) -lift -collect -normalize :registry)
+         _ (println "1")
          entity? #(->> % (get registry) m/properties ::entity)
+         _ (println "2")
          props #(str "[" (str/join ", " (map (fn [[k v]] (str (name k) "=" (if (fn? v) (v) (pr-str v)))) %)) "]")
          esc #(str/escape (str %) {\> "\\>", \{ "\\{", \} "\\}", \< "\\<", \" "\\\""})
          sorted #(sort-by (m/-comp str first) %)
          wrap #(str "\"" % "\"")
+         _ (println "4")
          label (fn [k v] (str "\"{" k "|"
                               (or (some->> (m/entries v) (map (fn [[k s]] (str k " " (esc (m/form (m/deref s)))))) (str/join "\\l"))
                                   (esc (m/form v)))

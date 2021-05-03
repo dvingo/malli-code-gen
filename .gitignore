@@ -1,9 +1,5 @@
 node_modules/
-public/js
-
 /target
-/checkouts
-
 pom.xml
 pom.xml.asc
 *.iml
@@ -14,8 +10,4 @@ pom.xml.asc
 .lein-*
 .nrepl-*
 .DS_Store
-
-.hgignore
-.hg/
 .cpcache
-public/js
