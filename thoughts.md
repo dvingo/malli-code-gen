@@ -76,7 +76,13 @@ Scrap Your Query Boilerplate With Specql – Tatu Tarvainen
 
 https://www.youtube.com/watch?v=qEXNyZ5FJN4&list=PLetHPRQvX4a9iZk-buMQfdxZm72UnP3C9&index=4
 
+Hodur
+
+https://github.com/hodur-org
+
+
 # Editors 
+
 This strategy makes heavy use of generated symbols, and editors have issues resolving these things.
 
 If you use cursive you can disable unknown symbols via, resolve-as :none
@@ -99,6 +105,7 @@ Use the code-gen but still def a var:
 ```
 
 # Code sketches
+
 Playing around with recursive schema.
 
 Using global names (fully qualified keywords) in order to generate clojure.spec.alpha specifications.
