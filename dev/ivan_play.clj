@@ -144,20 +144,42 @@
   (.close crux-node))
 
 (def task-eql
-  (mcg/schema->eql schema:task))
+  (mcg/schema->eql schema:task {:mcg/max-nest 4}))
+
+(def task-eql2
+  [:ivan-play/id
+   #:ivan-play{:user [:ivan-play/id :ivan-play/username #:e{:address [:zip :street]}]}
+   :ivan-play/description
+   :ivan-play/global?
+   {:sub-tasks '...}
+   :ivan-play/updated-at
+   :ivan-play/created-at])
+
 
 (comment
   (crux/submit-tx
     crux-node
-    [[:crux.tx/put
-      {:crux.db/id   (UUID/randomUUID)
-       ::id          :local-id
-       ::created-at  #inst"2020-03-20"
-       :sub-tasks    [#uuid"20fa70ab-d86e-4a02-8f72-2a8d1ce81dd7"]
-       ::description "A parent task"}]])
+    (let [child-uuid (UUID/randomUUID)]
+
+      [[:crux.tx/put
+        {:crux.db/id   child-uuid
+         ::id          :local-id
+         ::created-at  #inst"2020-03-20"
+         ::description "A child task"}]
+       [:crux.tx/put
+         {:crux.db/id   (UUID/randomUUID)
+          ::id          :local-id
+          ::created-at  #inst"2020-03-20"
+          :sub-tasks    [child-uuid]
+          ::description "A parent task"}]]))
 
   (crux/q
-     (crux/db crux-node)
-     {:find  [(list 'pull 'e (conj task-eql :crux.db/id))]
-      :where '[[e :crux.db/id]]}))
+    (crux/db crux-node)
+    {:find  [(list 'pull 'e (conj task-eql :crux.db/id))]
+     :where '[[e :crux.db/id]]})
+
+  (crux/q
+    (crux/db crux-node)
+    {:find  [(list 'pull 'e (conj task-eql2 :crux.db/id))]
+     :where '[[e :crux.db/id]]}))
 

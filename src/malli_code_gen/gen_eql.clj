@@ -7,7 +7,13 @@
             [malli-code-gen.test-schema :as ts1]
             [malli-code-gen.util :as u]))
 
-; https://github.com/edn-query-language/eql#eql-for-selections
+(comment
+  "Main members are:"
+    malli-code-gen.gen-eql/schema->eql-pull
+    malli-code-gen.gen-eql/map->eql-pull-vector
+  "EQL reference")
+  ; [1] https://github.com/edn-query-language/eql#eql-for-selections
+  ; [2] Crux pull https://opencrux.com/reference/queries.html#pull
 
 
 (def schema:task
@@ -69,10 +75,16 @@
   (m/schema? s1))
 
 (defn map->eql-pull-vector
-  "Given a map spec – returns a query vector
-  Crux pull https://opencrux.com/reference/queries.html#pull
+  "Given a map spec – returns an EQL query vector
+  See [1] for EQL vector reference.
 
-  et-schema "
+  Walk over schema entries,
+  For each entry:
+  - return a prop name if it's an atomic prop (1),
+  - otherwise recur depending on the property type.
+
+  et-schema – map schema or a m/MapSchema"
+  ; todo support EQL nest expressions '... (
   ([et-schema] (map->eql-pull-vector et-schema {:mcg/max-nest 3}))
   ([et-schema
     {:mcg/keys [root-schema max-nest cur-nest]
@@ -80,7 +92,7 @@
      :or       {max-nest 3
                 cur-nest 0}}]
    ;(prn ::pull-vector et-schema)
-   (def e1 et-schema)
+   ;(def e1 et-schema)
    (assert (composite-schema-types (m/type et-schema)) "Expecting a composite schema type")
    (let [root-schema (or root-schema et-schema)
 
@@ -89,6 +101,7 @@
                ^map spec-item-options
                ^malli.core/schema spec-item-schema
                :as entry]]
+
            (if (is-prop-atomic? spec-item-id et-schema root-schema)
              spec-item-id
 
@@ -133,15 +146,19 @@
 
 
 (defn schema->eql-pull
-  "Generates an EQL pull vector from a schema"
-  [schema]
+  "Generates an EQL pull vector from a schema
+  Expects a RefSchema or a compatible data."
+  [schema opts]
+  (comment "maybe use" (satisfies? m/RefSchema (m/schema schema)))
   (assert (#{:schema ::m/schema} (m/type schema)) "Expecting a schema")
   (let [schema* (m/schema schema)
         map-schema (m/deref (m/deref schema*))]
     (map->eql-pull-vector
       map-schema
-      {:mcg/root-schema schema*
-       :mcg/max-nest    3})))
+      (merge
+        {:mcg/root-schema schema*
+         :mcg/max-nest    3}
+        opts))))
 
 
 (comment
@@ -156,7 +173,9 @@
   (-> (m/type (m/deref (m/deref schema:task))))
 
   (-> (m/deref (m/deref schema:task))
-      (m/entries))
+      (m/entries)
+      (nth 4)
+      (second))
 
   (type (first (m/children schema:task)))
 

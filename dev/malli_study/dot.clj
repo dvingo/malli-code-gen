@@ -6,12 +6,17 @@
             [clojure.string :as str]))
 
 (defn -lift
+  "huh?
+  used once"
   [?schema]
   (let [schema (m/schema ?schema)]
     (if (and (satisfies? m/RefSchema schema) (-> schema m/deref m/type (= ::m/schema)))
       ?schema [:schema {:registry {::schema ?schema}} ?schema])))
 
-(defn -collect [schema]
+(defn -collect
+  "huh?
+  used once"
+  [schema]
   (let [state (atom {})]
     (m/walk
       schema
@@ -39,15 +44,17 @@
                              schema))))))
     (assoc ctx :registry @registry*)))
 
+
 (defn -get-links [registry]
   (let [links (atom {})]
     (doseq [[from schema] registry]
       (m/walk
         schema
-        (fn [schema _ _ _]
+        (fn [schema path walked-children opts]
           (when-let [to (if (satisfies? m/RefSchema schema) (m/-ref schema))]
             (swap! links update from (fnil conj #{}) to)))))
     @links))
+
 
 ;;
 ;; public api

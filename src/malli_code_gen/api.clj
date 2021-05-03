@@ -6,5 +6,5 @@
   "Given a schema generates an EQL pull vector for it
 
   Schema can be a [:schema ...] or [:map ...]"
-  [schema]
-  (malli-code-gen.gen-eql/schema->eql-pull schema))
+  [schema opts]
+  (malli-code-gen.gen-eql/schema->eql-pull schema opts))
