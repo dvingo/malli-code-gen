@@ -80,6 +80,17 @@ Hodur
 
 https://github.com/hodur-org
 
+These are out of initial scope, but formal verification based on malli schemas -> TLA+ and alloy would be amazing
+
+https://github.com/pfeodrippe/tla-edn
+
+https://github.com/pfeodrippe/tla-edn-example 
+
+http://alloytools.org
+
+Jay Parlar on Alloy
+
+https://www.youtube.com/watch?v=FvNRlE4E9QQ
 
 # Editors 
 
