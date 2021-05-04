@@ -395,6 +395,21 @@ Sample invocation:
  }
 ```
 
+### Malli function schemas and malli-instrument
+
+(defn )
+
+```clojure 
+(defn create-task 
+  [m] 
+  (let [task (-> m m/default-value-transformer optional->nil-transformer)]
+    (assert (m/validate task))
+    (let [tasks (task-tree->vec task)]
+      (crux-util/put-all tasks))))
+      
+(m/=> create-task [:=> [:cat map?] ::task])
+```
+
 read 
 
 

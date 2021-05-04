@@ -26,7 +26,7 @@
         nil
         (throw e)))))
 
-(def ref-schema? (partial satisfies? m/RefSchema))
+(defn ref-schema? [x] (satisfies? m/RefSchema x))
 
 (def composite-schema-types
   #{:vector :map :list :set ::m/schema :and})

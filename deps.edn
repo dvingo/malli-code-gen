@@ -13,12 +13,19 @@
                                            :sha     "b6b3193fcc42659d7e46ecd1884a228993441182"}}
    :main-opts  ["-m" "cognitect.test-runner" "-d" "src/test"]}
 
+  :malli-instrument
+  {:extra-deps
+   {setzer22/malli-instrument {:git/url "https://github.com/setzer22/malli-instrument.git"
+                               :sha     "5fdf2cc5ca7a2deabfcd787f1086f6a3e5615936"}}}
   :custom-malli-registry
   {:jvm-opts ["-Dmalli.registry/type=custom"]}
 
   :dev
-  {:extra-deps  {juxt/crux-core      {:mvn/version "21.04-1.16.0-beta"}
-                 juxt/crux-rocksdb   {:mvn/version "21.04-1.16.0-beta"}
-                 org.slf4j/slf4j-nop {:mvn/version "2.0.0-alpha1"}}
+  {:extra-deps  {com.taoensso/timbre       {:mvn/version "5.1.2"}
+                 thheller/shadow-cljs      {:mvn/version "2.12.5"}
+                 org.clojure/clojurescript {:mvn/version "1.10.844"}
+                 juxt/crux-core            {:mvn/version "21.04-1.16.0-beta"}
+                 juxt/crux-rocksdb         {:mvn/version "21.04-1.16.0-beta"}
+                 org.slf4j/slf4j-nop       {:mvn/version "2.0.0-alpha1"}}
 
    :extra-paths ["src/dev"]}}}

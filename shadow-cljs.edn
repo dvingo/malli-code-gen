@@ -1,0 +1,19 @@
+{:deps
+ {:aliases [:dev :test]}
+
+ :dev-http
+ {8989 "public"}
+
+ :builds
+ {:main
+  {:target    :node-script
+   :main      space.matterandvoid.node-js/main
+   :dev       {:closure-defines {malli.registry/type "custom"}}
+   :output-to "target/node-script.js"}
+
+  :node-test
+  {:target          :node-test
+   :closure-defines {malli.registry/type "custom"}
+   :output-to       "target/node-tests.js"
+   :ns-regexp       "-test$"}}}
+
