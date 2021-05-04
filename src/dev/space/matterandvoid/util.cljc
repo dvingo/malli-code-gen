@@ -102,16 +102,9 @@
              :type-properties
                    {:error/fn
                     {:en (fn [{:keys [schema value]} _]
-                           (str
-                             "value at key "
-                             a ", "
-                             (fa value)
-                             ", should be "
-                             msg
-                             " value at key "
-                             b
-                             ", "
-                             (fb value)))}}
+                           (str "value at key " a ", " (fa value)
+                             ", should be " msg
+                             " value at key " b ", " (fb value)))}}
              :min  2,
              :max  2})))})))
 
@@ -217,7 +210,7 @@
 ;           (-comparator-relation-schemas))})
 ;      {:x #inst "2020" :y #inst "2021"})))
 
-(defn get-keywork-schemas [registry]
+(defn get-keyword-schemas [registry]
   (->>
     registry
     mr/schemas
@@ -228,8 +221,8 @@
   #_(sort (filter keyword? (keys (mr/schemas m/default-registry))))
   )
 (comment
-  (get-keywork-schemas m/default-registry)
-  (get-keywork-schemas
+  (get-keyword-schemas m/default-registry)
+  (get-keyword-schemas
     (mr/composite-registry
       m/default-registry
       (-comparator-relation-schemas))
