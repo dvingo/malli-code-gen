@@ -10,7 +10,8 @@
   used once"
   [?schema]
   (let [schema (m/schema ?schema)]
-    (if (and (satisfies? m/RefSchema schema) (-> schema m/deref m/type (= ::m/schema)))
+    (if (and (satisfies? m/RefSchema schema)
+          (-> schema m/deref m/type (= ::m/schema)))
       ?schema
       [:schema {:registry {::schema ?schema}} ?schema])))
 
@@ -35,14 +36,14 @@
   (let [registry* (atom registry)]
     (doseq [[k v] registry]
       (swap! registry* assoc k
-             (m/walk v (fn [schema path children _]
-                         (let [options (update (m/options schema) :registry #(mr/composite-registry @registry* %))
-                               schema (m/into-schema (m/type schema) (m/properties schema) children options)]
-                           (if (and (seq path) (= :map (m/type schema)))
-                             (let [ref (-schema-name k path)]
-                               (swap! registry* assoc ref (mu/update-properties schema assoc ::entity k))
-                               ref)
-                             schema))))))
+        (m/walk v (fn [schema path children _]
+                    (let [options (update (m/options schema) :registry #(mr/composite-registry @registry* %))
+                          schema  (m/into-schema (m/type schema) (m/properties schema) children options)]
+                      (if (and (seq path) (= :map (m/type schema)))
+                        (let [ref (-schema-name k path)]
+                          (swap! registry* assoc ref (mu/update-properties schema assoc ::entity k))
+                          ref)
+                        schema))))))
     (assoc ctx :registry @registry*)))
 
 
@@ -66,21 +67,51 @@
   ([?schema options]
    (println "in transform")
    (let [registry (-> ?schema (m/schema options) -lift -collect -normalize :registry)
-         _ (println "1")
-         entity? #(->> % (get registry) m/properties ::entity)
-         _ (println "2")
-         props #(str "[" (str/join ", " (map (fn [[k v]] (str (name k) "=" (if (fn? v) (v) (pr-str v)))) %)) "]")
-         esc #(str/escape (str %) {\> "\\>", \{ "\\{", \} "\\}", \< "\\<", \" "\\\""})
-         sorted #(sort-by (m/-comp str first) %)
-         wrap #(str "\"" % "\"")
-         _ (println "4")
-         label (fn [k v] (str "\"{" k "|"
+         _ (println "registry is: " )
+         _ (clojure.pprint/pprint registry)
+         _        (println "1")
+         entity?  #(->> % (get registry) m/properties ::entity)
+         _        (println "2")
+         props    #(str "[" (str/join ", "
+                              (map (fn [[k v]]
+                                     (str (name k) "=" (if (fn? v) (v)
+                                                                   (pr-str v))))
+                                %)) "]")
+         esc      #(str/escape (str %) {\> "\\>", \{ "\\{", \} "\\}", \< "\\<", \" "\\\""})
+         sorted   #(sort-by (m/-comp str first) %)
+         wrap     #(str "\"" % "\"")
+         _        (println "4")
+         label    (fn [k v] (str "\"{" k "|"
                               (or (some->> (m/entries v) (map (fn [[k s]] (str k " " (esc (m/form (m/deref s)))))) (str/join "\\l"))
-                                  (esc (m/form v)))
+                                (esc (m/form v)))
                               "\\l}\""))
-         > #(apply println %&)
-         >> #(apply > " " %&)]
-     (with-out-str
+         _        (println "5")
+         >        #(apply println %&)
+         >>       #(apply > " " %&)]
+     (println "props: " (props {:shape "record", :style "filled", :color "#000000"}))
+     (println "sorted: " (sorted registry))
+     (println "get links: " (-get-links registry))
+     (println "sorted get links" (sorted (-get-links registry)))
+     (doseq
+       [[from tos] (sorted (-get-links registry)), to tos]
+       (println "from: " from) (println " to: " to)
+       (println " wrap from: " (wrap from))
+       #_(>> (wrap from) "->" (wrap to) (props {:arrowtail (if (entity? to) "diamond" "odiamond")}))
+       )
+     #_(with-out-str
+       (> "digraph {")
+       ;(>> "node" (props {:shape "record", :style "filled", :color "#000000"}))
+       ;(>> "edge" (props {:dir "back", :arrowtail "none"}))
+       ;(>>)
+       ;(doseq [[k v] (sorted registry)]
+       ;  (>> (wrap k) (props {:label #(label k v), :fillcolor (if (entity? k) "#e6caab" "#fff0cd")})))
+       ;(>>)
+       (doseq
+         [[from tos] (sorted (-get-links registry)), to tos]
+         (>> (wrap from) "->" (wrap to) (props {:arrowtail (if (entity? to) "diamond" "odiamond")})))
+       (> "}"))
+
+     #_(with-out-str
        (> "digraph {")
        (>> "node" (props {:shape "record", :style "filled", :color "#000000"}))
        (>> "edge" (props {:dir "back", :arrowtail "none"}))
@@ -90,5 +121,6 @@
        (>>)
        (doseq [[from tos] (sorted (-get-links registry)), to tos]
          (>> (wrap from) "->" (wrap to) (props {:arrowtail (if (entity? to) "diamond" "odiamond")})))
-       (> "}")))))
+       (> "}"))
+     )))
 

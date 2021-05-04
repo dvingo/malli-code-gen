@@ -1,20 +1,25 @@
 (ns dan-play
   (:require
-    [space.matterandvoid.data-model.db :as db]
-    [space.matterandvoid.data-model.comment :as comment]
-    [space.matterandvoid.data-model.task :as task]
     [clojure.java.io :as io]
-    [crux.api :as crux]
+    [malli-study.dot :as md]
     [malli.clj-kondo :as mk]
     [malli.core :as m]
     [malli.generator :as mg]
     [malli.provider :as mp]
     [malli.registry :as mr]
-    [space.matterandvoid.malli-gen-eql-pull :as gen-eql]
     [malli.transform :as mt]
     [malli.util :as mu]
+    [space.matterandvoid.data-model.comment :as comment]
+    [space.matterandvoid.data-model.db :as db]
+    [space.matterandvoid.data-model.task :as task]
+    [space.matterandvoid.malli-gen-eql-pull :as gen-eql]
     [space.matterandvoid.malli-registry :as reg])
   (:import [java.util Date UUID]))
+
+
+;--------------------------------------------------------------------------------
+; malli function schemas + instrument + clj-kondo warnings
+;--------------------------------------------------------------------------------
 
 (comment
   ;(reg/register! {::task/task (mu/update-in ) [::] comment-pull-5})
@@ -472,4 +477,41 @@
   (mg/generate ::task)
   (mg/genn)
 
+  )
+
+(comment
+  (let [s (m/schema ::task/task nil)]
+    (satisfies? m/RefSchema s)
+    (-> s m/deref m/type)
+    )
+  (md/-lift
+    (m/schema ::task/task nil))
+  (md/transform
+    ::comment/comment)
+  (md/transform
+    [:schema
+     {:registry {"comment" (m/form (m/deref ::comment/comment))}}])
+  (md/transform ::comment/comment)
+  )
+
+(defmacro my-when [test & body]
+  `(if ~test (do ~@body)) nil)
+(defmacro my-thing [hi]
+  hi)
+
+(comment
+  (my-thing 'hi)
+  (macroexpand
+    '(my-when [1 2 34] body)))
+
+(comment
+
+  (m/properties (m/schema ::comment/comment))
+  (m/properties-schema (m/schema ::task/task))
+  (m/properties (m/schema ::task/task))
+  (m/-ref (m/schema ::comment/comment))
+  (m/-type-properties (m/schema ::comment/comment))
+  (md/transform
+    [:schema
+     {:registry {"comment" (m/form (m/deref ::comment/comment))}}])
   )
