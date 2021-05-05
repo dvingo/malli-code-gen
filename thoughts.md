@@ -16,10 +16,20 @@ use the interceptor pattern.
 Takes malli schema as input and returns code as data (a list).
 ```clojure
 (sieppari.core/execute {::schema MyEntityMalliSchema}
-   (schema->resolver)
+   (schema->pathom2-resolver)
+   (schema->pathom3-resolver)
    (schema->fulcro-query)
    (schema->crux-pull-syntax))
 ```
+
+The goal would be for each of these to write files to the local codebase with generated code, this way get a working system and one you can immediately start conforming to your needs.
+
+Or.. you design the system to dispatch on fully qualified keywords to perform logic at key points in the lifecycle of the application.
+or you provide both. I think in some instances it is valuable to get boilerplate code literals - but the other thought was that 
+there would be lower-level helpers, see pathom resolver example below - the user writes the resolver and uses helpers to pull an entity and for the pathom output vector. These are the parts of the resolver that would change if you made a change to your schema - thus changing your schema means you don't have to update this 
+resolver - yet you can write your own resolver logic.
+
+
 I'm imagining a system where anyone can write a generator/transformation of a malli
 schema, producing data (can be code forms as well) and this tool would manage executing them and performing side effects
 to allow for automatic utilities to be created from malli schemas.
