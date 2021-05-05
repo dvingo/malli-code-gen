@@ -198,9 +198,10 @@ Generate clojure specs. The main helper is a function that outputs a clojure lis
   (s/def :task/description string?)
   (s/def :task/duration tick.alpha.api/duration?)
   (s/def :task/subtasks (s/nilable (s/coll-of ::task :type vector?)))
+  (s/def :task/comments (s/nilable (s/coll-of ::comment :type vector?)))
   (s/def :task/global? (s/nilable boolean?))
   (s/def ::task (s/keys :req [::id ::description ::duration] 
-                        :opt [::global? ::db/created-at ::db/updated-at ::subtasks]]))
+                        :opt [::global? ::db/created-at ::db/updated-at ::subtasks ::comments]]))
 ```
 Then a macro wrapper can delegate to this form:
 
