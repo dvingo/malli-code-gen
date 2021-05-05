@@ -20,6 +20,30 @@ Takes malli schema as input and returns code as data (a list).
    (schema->fulcro-query)
    (schema->crux-pull-syntax))
 ```
+I'm imagining a system where anyone can write a generator/transformation of a malli
+schema, producing data (can be code forms as well) and this tool would manage executing them and performing side effects
+to allow for automatic utilities to be created from malli schemas.
+
+For example: executing the clj-kondo generator and the graphviz diagram syntax generator automatically for a schema and produce useful files;
+one a configuration file, another visual information that helps us understand our system.
+
+The grander idea is to combine a collection utilities together to produce a running system with pieces collected from various generators.
+
+Perhaps you have a middleware/interceptor in your web service that determines the handler's behavior, multimethod or core.match table
+The entries that go in the core.match table could be provided by the library - they would be variants (todo, ref Janine's talk)
+
+a vector of fully qualified kw and the params it accepts - they would all just take a map
+
+```clojure
+[[::lib1/key1 {}] callback-fn-symbol]
+```
+
+the generator would supply the variant as data `[::lib1/key1 {}]` and which fn to call when that clause matches.
+
+You would still need a service that handles the plumbing - I think what I'd like is that you can provide your own service layers (http stack)
+and we provide interceptors and middleware to gain access to the malli generators. This way it can be used easily by everyone without being tied to one
+system. Then normal templates for web services can be used and easily add these malli generators to.
+
 
 *_update_*:
 
