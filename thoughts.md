@@ -92,6 +92,10 @@ Jay Parlar on Alloy
 
 https://www.youtube.com/watch?v=FvNRlE4E9QQ
 
+Hyperfiddle
+
+https://github.com/hyperfiddle/hyperfiddle
+
 # Editors 
 
 This strategy makes heavy use of generated symbols, and editors have issues resolving these things.
@@ -471,29 +475,35 @@ The point of the generators in this library are to get leverage.
 The default output should be sane defaults that give you a working system with no code, given only a malli schema.
 
 I want to iterate quickly on applications without needing to deal with persistence, validation,
-authorization - these are cross cutting concerns and the end goal is a system of utilities that 
+authorization basic UI for CRUD (think admin interfaces) - these are cross cutting concerns and the end goal is a system of utilities that 
 give you sane defaults and flexiblity to adapt them.
 
-
-The system is open to extension due the design of malli's properties features - any schema can have arbitrary key value pairs in this map.
+The system is open to extension due the design of malli's properties feature - any schema can have arbitrary key value pairs in this map.
 
 
 Things needed for a basic web app:
 
 1. DB layer
-  - normalization when persisting (convert nested maps to pointers)
+  - normalization when persisting (convert nested maps to pointers for example)
   - validation before saving
 2. Query layer
   - pathom resolvers and mutations
 3. Authentication and authorization
   - currently implemented as pathom-transform
   - Properties of a malli schema can indicate the access rights of a property and the helper code
-    can use the schema to verify.
-4. Transit - when transmitting data
-5. FE
-  - The pervasive style of state change in cljs is fn of map -> map
-     the generators can have form support built in that deals with this structure
-    optionally could use or persistence like datascript (or crux cljs (!))
-  - for forms - client-side mutations for whichever UI lib you use.
-  - this part would have to be per UI library. whichever react wrapper in cljs etc.
+    can use the schema to verify at runtime.
+4. Transit encoding - when transmitting data.
+5. Frontend
+  - Display data via some UI library.
+    - Data in -> markup out (hiccup).
 6. FE mutations - how the system evolves.
+   - The pervasive style of state change in cljs is fn of map -> map
+     the generators can have form support built in that deals with this structure
+    optionally could use custom persistence like datascript.
+  - for forms - client-side mutations for whichever UI lib you use.
+    - this part would have to be per UI library. Whichever react wrapper in cljs etc.
+
+
+The idea of this library is to:
+1. Provide utilities to generate data and functions to implement the parts above.
+2. A "system" of glue code that sets up the connections - db, web server, ui layer. Very similar to fulcro RAD.
