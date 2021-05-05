@@ -350,7 +350,7 @@ https://github.com/fulcrologic/fulcro-rad/blob/develop/src/main/com/fulcrologic/
   ;; (malli-gen/gen-fulcro-query ::task)
   (nc [::task/id ::task/description ::task/duration ::task/global? 
       {::task/sub-tasks '...} ;; <-- value of :recur above
-      {::task/notes (com.fulcrologic.fulcro.components/get-query Note) ::db/updated-at ::db/created-at} ]))
+      {::task/notes (com.fulcrologic.fulcro.components/get-query Note)} ::db/updated-at ::db/created-at]))
 
 (defnc my-component
   []
