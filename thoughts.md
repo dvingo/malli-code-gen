@@ -185,21 +185,38 @@ Given a task with the following malli schema:
 
 ## Clojure.spec.alpha 
 
-Generate clojure specs, something like:
+Generate clojure specs. The main helper is a function that outputs a clojure list of code:
 
 ```clojure
-(gen-clojure-spec-alpha [:schema {:registry registry} ::task])
+(gen-clojure-spec-alpha-forms [:schema {:registry registry} ::task])
 ```
 
 ```clojure
-(>def ::task any?)
-(>def :task/id uuid?)
-(>def :task/description string?)
-(>def :task/duration tick.alpha.api/duration?)
-(>def :task/subtasks (s/nilable (s/coll-of ::task :type vector?)))
-(>def :task/global? (s/nilable boolean?))
-(>def ::task (s/keys :req [::id ::description ::duration] :opt [::global ::db/created-at ::db/updated-at ::subtasks]]))
+`(do
+  (s/def ::task any?)
+  (s/def :task/id uuid?)
+  (s/def :task/description string?)
+  (s/def :task/duration tick.alpha.api/duration?)
+  (s/def :task/subtasks (s/nilable (s/coll-of ::task :type vector?)))
+  (s/def :task/global? (s/nilable boolean?))
+  (s/def ::task (s/keys :req [::id ::description ::duration] 
+                        :opt [::global? ::db/created-at ::db/updated-at ::subtasks]]))
 ```
+Then a macro wrapper can delegate to this form:
+
+```clojure
+(defmacro gen-clojure-spec-alpha [schema]
+  (gen-clojure-spec-alpha-forms schema))
+```
+
+This way a user can evaluate `gen-clojure-spec-alpha-forms` in a repl and copy the spec forms if they want or save them to a file.
+
+-----
+
+I think we should filter the malli schema keys that are fully qualified keywords because spec only supports these.
+
+Malli `[:ref]` schemas should not be traversed recursively - the API would be that the user invokes this helper for each entity
+in their codebase that they want specs for separately. 
 
 ## Pull vector
 
