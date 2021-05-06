@@ -5,7 +5,7 @@
     [space.matterandvoid.data-model.comment :as comment]
     [space.matterandvoid.data-model.db :as db]
     [space.matterandvoid.malli-registry :as reg]
-    [space.matterandvoid.util :as u]
+    [space.matterandvoid.util2 :as u]
     [malli.transform :as mt]
     [malli.error :as me]))
 
@@ -68,8 +68,8 @@
     [::db/created-at {:optional true}]]
    [:fn (fn [{::db/keys [created-at updated-at]}]
           #?(:clj  (<= (.compareTo created-at updated-at) 0)
-             :cljs (<= created-at updated-at)))]]
-  )
+             :cljs (<= created-at updated-at)))]])
+
 
 (defn set-pull-depth! [d]
   (reg/register!
@@ -109,8 +109,8 @@
   (create-task {:extra-key 5 ::description "Wash the dishes."})
 
   {::id          #uuid"6ff02977-66bd-4a98-ba4a-6a5b9b6beb70"
-   ::description "Wash the dishes."
-   })
+   ::description "Wash the dishes."})
+
 
 (comment
   (require

@@ -1,4 +1,4 @@
-(ns space.matterandvoid.test-schema
+(ns space.matterandvoid.test-schema2
   "Dev scaffolding, to be removed later")
 
 
@@ -19,6 +19,7 @@
    ::created-at  inst?
    ::username    string?
    ::subtasks    [:vector [:ref ::task]]
+   ::tags        [:set string?]
 
 
    ::user        [:map
@@ -29,6 +30,7 @@
                   {:e/type :e.type/task}
                   ::id
                   ::user
+                  ::tags
                   ::description
                   [::global? {:optional true}]
                   [::subtasks {:optional true}]
