@@ -7,8 +7,8 @@
    :e/address    [:map
                   {:registry {:e.address/street string?
                               :e.address/zip    string?}}
-                  [:zip :e.address/zip]
-                  [:street :e.address/street]]
+                  :e.address/zip
+                  :e.address/street]
 
    ::id          uuid?
    ::description string?
@@ -24,7 +24,8 @@
 
    ::user        [:map
                   {:e/type :e.type/user}
-                  ::id ::username :e/address]
+                  ::id ::username
+                  #_:e/address]
 
    ::task        [:map
                   {:e/type :e.type/task}
@@ -44,6 +45,13 @@
   [:schema
    {:registry registry:main}
    ::task])
+
+(def schema:user
+  "spec with external registry
+  satisfies Schema"
+  [:schema
+   {:registry registry:main}
+   ::user])
 
 
 (def spec:task

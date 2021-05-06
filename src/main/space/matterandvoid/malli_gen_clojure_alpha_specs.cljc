@@ -81,6 +81,9 @@
     [props-defs @atom:defined]))
 
 (comment
+  (-map->prop-specs (u/get-map-schema ts1/schema:user) {::defined-props #{}}))
+
+(comment
   ; todo find a way to check equality
   (= [(list (list 's/def :ts1/tags (list 's/coll-of 'string? :kind 'set?))
             (list 's/def :ts1/description 'string?)
@@ -105,7 +108,24 @@
         req-props (mapv first (filterv is-req-prop? ch-props))
         opt-props (mapv first (filterv is-opt-prop? ch-props))]
     (list *s-def-symbol* spec-name,
-          (list *s-keys-symbol* :req req-props, :opt opt-props))))
+          (seq
+            (cond-> [*s-keys-symbol*]
+                    (not-empty req-props)
+                    (into [:req req-props])
+                    (not-empty opt-props)
+                    (into [:opt opt-props]))))))
+
+
+(assert (= (list 's/def ::ts1/task
+                 (list 's/keys :req [::ts1/id
+                                     ::ts1/user
+                                     ::ts1/tags
+                                     ::ts1/description]
+                       :opt [::ts1/global?
+                             ::ts1/subtasks
+                             ::ts1/updated-at
+                             ::ts1/created-at]))
+           (map->keys-spec ::ts1/task (u/get-map-schema ts1/schema:task))))
 
 
 (defn map->spec-set
@@ -128,10 +148,42 @@
 
 (defn gen-clojure-spec-alpha
   "Generate complete set of spec defs for your malli specs"
-  [all-malli-schemas opts]
-  (let []))
-  
+  ([spec-name->malli-schema] (gen-clojure-spec-alpha spec-name->malli-schema {}))
+  ([spec-name->malli-schema
+    {::keys [accumulated-specs defined-props entity-types]
+     :as opts}]
+   (let [entity-types (or entity-types (set (keys spec-name->malli-schema)))
+         schemas (vals spec-name->malli-schema)
+
+         def-schema-props
+         (fn [[specs-vec defined-props] schema]
+           (prn ::schema (m/deref schema))
+           (let [schema (u/get-map-schema schema)
+                 [new-specs new-def-props]
+                 (-map->prop-specs schema {::entity-types  entity-types
+                                           ::defined-props defined-props})]
+             [(into specs-vec new-specs)
+              new-def-props]))
+
+         def-schema-keys
+         (fn [specs-vec [spec-name schema]]
+           (prn ::schema (m/deref schema))
+           (let [schema (u/get-map-schema schema)
+                 new-keys-spec (map->keys-spec spec-name schema)]
+             (conj specs-vec new-keys-spec)))
+
+
+         [all-props-specs all-defined-props]
+         (reduce def-schema-props [[] #{}] schemas)
+
+         all-props-specs
+         (reduce def-schema-keys
+                 all-props-specs
+                 spec-name->malli-schema)]
+
+     all-props-specs)))
 
 (comment
   (gen-clojure-spec-alpha
-    [[:schema {:registry ts1/registry:main} ::task]]))
+    {::ts1/task ts1/schema:task
+     ::ts1/user ts1/schema:user}))
