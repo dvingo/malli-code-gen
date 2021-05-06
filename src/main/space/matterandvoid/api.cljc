@@ -1,4 +1,4 @@
-(ns malli-code-gen.api
+(ns space.matterandvoid.api
   (:require [malli-code-gen.gen-eql]))
 
 

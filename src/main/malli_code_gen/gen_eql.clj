@@ -1,7 +1,6 @@
 (ns malli-code-gen.gen-eql
   "Generate EQL pull vectors from schemas
-
-  EQL ref https://github.com/edn-query-language/eql#eql-for-selections"
+  EQL reference https://github.com/edn-query-language/eql#eql-for-selections"
   (:require [malli.util :as mu]
             [malli.core :as m]
             [malli-code-gen.test-schema :as ts1]

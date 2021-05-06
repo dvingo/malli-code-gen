@@ -1,7 +1,17 @@
 (ns space.matterandvoid.malli-gen-eql-pull
+  "Generate EQL pull vectors from schemas
+  EQL reference https://github.com/edn-query-language/eql#eql-for-selections"
   (:require
     [malli.core :as m])
   #?(:clj (:import [clojure.lang ExceptionInfo])))
+
+(comment
+  "Main members are:"
+  space.matterandvoid.malli-gen-eql-pull/map->eql-pull-vector
+  "EQL reference")
+; [1] https://github.com/edn-query-language/eql#eql-for-selections
+; [2] Crux pull https://opencrux.com/reference/queries.html#pull
+
 
 (defn ref-coll->reffed
   "Takes a ref schema, this probably needs to be updated to support refs where you want to
@@ -85,7 +95,7 @@
   ;(prn ::pull-vector orig-schema)
   ;(println (apply str (repeat 80 "-")))
   (let [schema (m/deref orig-schema)
-        {:keys [pull-depth] :or {pull-depth 3}} (m/properties schema)
+        {::mcg/keys [pull-depth] :or {pull-depth 3}} (m/properties schema)
         _      (assert (supported-schema-types (m/type schema)) (str "Invalid schema. Supports: " (pr-str supported-schema-types)))
         ;_      (println "schema type: " (pr-str (m/type schema)))
         entry->pull-item
@@ -118,3 +128,4 @@
     (let [map-schema (get-map-schema schema)]
       ;(prn "chidren of schema: " (m/children map-schema))
       (mapv entry->pull-item (m/children map-schema)))))
+
