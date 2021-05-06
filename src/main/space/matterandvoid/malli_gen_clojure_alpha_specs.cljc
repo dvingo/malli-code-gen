@@ -19,12 +19,16 @@
 
 
 (defn composite-schema->spec-def [comp-schema]
-  (let [coll-type (m/type (m/deref comp-schema))
+  ;(prn ::comp-schema comp-schema)
+  (let [comp-schema (m/deref comp-schema)
+        coll-type (m/type comp-schema)
         ;_ (prn ::coll-type coll-type)
         item-type (or (u/ref-coll->reffed comp-schema)
                       (u/coll-schema->pred-symbol comp-schema))
         ;_ (prn ::item-type item-type)
         kind-pred (get coll-type->pred coll-type 'vector?)]
+    ; can also have :count :min-count :max-count :distinct
+    ; see https://clojure.github.io/spec-alpha2/ (find "every")
     (list *s-coll-of-symbol* item-type :kind kind-pred)))
 
 (assert (= (list 's/coll-of 'string? :kind 'set?)
@@ -32,13 +36,13 @@
                (composite-schema->spec-def))))
 
 (comment
-  (-> ts1/schema:task (m/deref) (m/deref)
+  (-> ts1/schema:task (u/get-map-schema)
       (m/children) (nth 2)
       (nth 2)
       (m/deref)
       (composite-schema->spec-def))
 
-  (-> ts1/schema:task (m/deref) (m/deref)
+  (-> ts1/schema:task (u/get-map-schema)
       (m/children) (nth 5) (nth 2)
       (composite-schema->spec-def)))
 
@@ -52,16 +56,25 @@
       (composite-schema->spec-def schema))
     schema))
 
+(assert
+  (= (list 's/coll-of 'string? :kind 'set?)
+     (-> ts1/schema:task (u/get-map-schema)
+         (mu/get ::ts1/tags)
+         (composite-schema->spec-def))))
+
 
 (defn- -map->prop-specs
-  "generate a list of specs for props"
-  [map-schema {::keys [defined-props] :as opts}]
+  "generate a list of specs for props
+   opts
+   :entity-types - set of et kw"
+  [map-schema {::keys [entity-types defined-props] :as opts}]
   (let [entries (m/children map-schema)
         atom:defined (atom defined-props)
         props-defs
         (doall
           (for [[prop-name opts schema] entries
-                :when (not (contains? defined-props prop-name))]
+                :when (and (not (contains? defined-props prop-name))
+                           (not (contains? entity-types prop-name)))]
             (do
               (swap! atom:defined conj prop-name)
               (list *s-def-symbol* prop-name (schema->spec-def schema)))))]
@@ -69,15 +82,18 @@
 
 (comment
   ; todo find a way to check equality
-  (= [(list (list 's/def :ts1/user ':ts1/user)
+  (= [(list (list 's/def :ts1/tags (list 's/coll-of 'string? :kind 'set?))
             (list 's/def :ts1/description 'string?)
             (list 's/def :ts1/global? 'boolean?)
-            (list 's/def :ts1/subtasks ':ts1/subtasks)
+            (list 's/def :ts1/subtasks (list 's/coll-of ::ts1/task :kind 'vector?))
             (list 's/def :ts1/updated-at 'inst?)
-            (list 's/def :ts1/created-at 'inst?))]
+            (list 's/def :ts1/created-at 'inst?))
+      #{::ts1/subtasks ::ts1/global? ::ts1/tags ::ts1/description
+        ::ts1/id ::ts1/created-at ::ts1/updated-at}]
      (-map->prop-specs
        (u/get-map-schema ts1/schema:task)
-       {::defined-props #{::ts1/id}})))
+       {::entity-types #{::ts1/user}
+        ::defined-props #{::ts1/id}})))
 
 
 (defn is-req-prop? [[prop-name options schema]]
@@ -104,15 +120,17 @@
 
 (comment
   (map->spec-set
-    ::task
+    ::ts1/task
     (u/get-map-schema ts1/schema:task)
-    {::defined-props #{::ts1/id}}))
+    {::entity-types #{::ts1/user}
+     ::defined-props #{::ts1/id}}))
 
 
 (defn gen-clojure-spec-alpha
   "Generate complete set of spec defs for your malli specs"
   [all-malli-schemas opts]
-  1)
+  (let []))
+  
 
 (comment
   (gen-clojure-spec-alpha

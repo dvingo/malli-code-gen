@@ -46,6 +46,14 @@
         nil
         (throw e)))))
 
+(assert (= :map
+           (-> (m/deref (m/deref ts1/schema:task))
+               (mu/get ::ts1/user) (m/deref)
+               (schema-type))))
+
+(defn map-schema? [ref-coll-schema]
+  (= :map (schema-type ref-coll-schema)))
+
 
 (defn is-vec-of-refs? [schema]
   (let [s (m/deref schema)]
@@ -92,17 +100,21 @@
 
 
 (defn ref-coll->reffed
-  "Takes a ref schema, this probably needs to be updated to support refs where you want to
-  add :and constraints just like the root schema."
+  "Takes a ref coll schema like [:vector [:ref :my-ns/entity-type]] and
+  returns the referenced entity-type keyword (:my-ns/entity-type)"
+  ; todo this probably needs to be updated to support refs where you want to
+  ; add :and constraints just like the root schema.
   [ref-coll-schema]
-  (-> ref-coll-schema
-      (m/deref)
-      (m/children) (first)
-      (m/children) (first)))
+  (when-not (map-schema? ref-coll-schema)
+    (-> ref-coll-schema
+        (m/deref)
+        (m/children) (first)
+        (m/children) (first))))
 
-(assert (= ::ts1/task (-> (get-map-schema ts1/schema:task)
-                          (mu/get ::ts1/subtasks) (m/deref)
-                          (ref-coll->reffed))))
+(assert (= ::ts1/task
+           (-> (get-map-schema ts1/schema:task)
+               (mu/get ::ts1/subtasks) (m/deref)
+               (ref-coll->reffed))))
 
 
 (defn coll-schema->pred-symbol [coll-schema]
