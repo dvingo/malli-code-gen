@@ -146,9 +146,9 @@
      ::defined-props #{::ts1/id}}))
 
 
-(defn gen-clojure-spec-alpha
+(defn map->all-specs
   "Generate complete set of spec defs for your malli specs"
-  ([spec-name->malli-schema] (gen-clojure-spec-alpha spec-name->malli-schema {}))
+  ([spec-name->malli-schema] (map->all-specs spec-name->malli-schema {}))
   ([spec-name->malli-schema
     {::keys [accumulated-specs defined-props entity-types]
      :as opts}]
@@ -184,6 +184,24 @@
      all-props-specs)))
 
 (comment
-  (gen-clojure-spec-alpha
+  (map->all-specs
     {::ts1/task ts1/schema:task
      ::ts1/user ts1/schema:user}))
+
+
+(defn schemas->all-specs
+  "Takes a sequence of malli RefSchemas or their source vectors
+   and returns a list clojure/specs-alpha2 defs"
+  [schemas]
+  (let [schema->spec-name-entry
+        (fn [schema]
+          (cond
+            (vector? schema) [(last schema) (m/schema schema)]
+            (u/ref-schema? schema) [(last (m/form schema)) schema]))
+        spec-name->schema
+        (into {} (map schema->spec-name-entry schemas))]
+    (map->all-specs spec-name->schema)))
+
+
+(comment
+  (schemas->all-specs [ts1/schema:task ts1/schema:user]))
