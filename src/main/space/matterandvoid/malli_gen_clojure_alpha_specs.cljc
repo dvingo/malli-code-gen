@@ -90,12 +90,12 @@
   (-map->prop-specs (u/get-map-schema ts2/schema:user) {::defined-props #{}}))
 
 (assert
-  (= [(list (list 's/def ::ts2/tags (list 's/coll-of 'string? :kind 'set?))
-            (list 's/def ::ts2/description 'string?)
-            (list 's/def ::ts2/global? 'boolean?)
-            (list 's/def ::ts2/subtasks (list 's/coll-of ::ts2/task :kind 'vector?))
-            (list 's/def ::ts2/updated-at 'inst?)
-            (list 's/def ::ts2/created-at 'inst?))
+  (= ['((s/def ::ts2/tags (s/coll-of string? :kind set?))
+        (s/def ::ts2/description string?)
+        (s/def ::ts2/global? boolean?)
+        (s/def ::ts2/subtasks (s/coll-of ::ts2/task :kind vector?))
+        (s/def ::ts2/updated-at inst?)
+        (s/def ::ts2/created-at inst?))
       #{::ts2/subtasks ::ts2/global? ::ts2/tags ::ts2/description
         ::ts2/id ::ts2/created-at ::ts2/updated-at}]
      (-map->prop-specs
@@ -172,7 +172,7 @@
 
          def-schema-keys
          (fn [specs-vec [spec-name schema]]
-           (prn ::schema (m/deref schema))
+           ;(prn ::schema (m/deref schema))
            (let [schema (u/get-map-schema schema)
                  new-keys-spec (map->keys-spec spec-name schema)]
              (conj specs-vec new-keys-spec)))
