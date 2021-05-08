@@ -8,8 +8,8 @@
     [space.matterandvoid.malli-registry :as reg]))
 
 (def comment-schema
-  {::id      uuid?
-   ::content string?
+  {::id      :uuid
+   ::content :string
    ::replies [:vector [:ref ::comment]]
    ::comment [:map {:doc-string "A comment is a textual content that can be attached to another entity."}
               ::id
@@ -17,8 +17,9 @@
               [::replies {:optional true}]
               ::db/updated-at
               ::db/created-at]
-   ::comment-db
-             [:and ::comment
+   #_#_::comment-db
+             [:and
+              ::comment
               [:fn (fn [{::db/keys [created-at updated-at]}]
                      #?(:clj  (<= (.compareTo created-at updated-at) 0)
                         :cljs (<= created-at updated-at)))]]})

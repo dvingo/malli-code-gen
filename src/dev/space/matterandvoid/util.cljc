@@ -24,6 +24,7 @@
               (UUID/fromString
                 (format "ffffffff-ffff-ffff-ffff-%012d" int-or-str))
               (UUID/fromString int-or-str)))))
+(comment (uuid))
 
 ;(m/=> uuid
 ;  [:function

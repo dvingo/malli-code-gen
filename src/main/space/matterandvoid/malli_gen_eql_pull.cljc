@@ -51,15 +51,14 @@
     (assert (= (count map-schemas) 1))
     (first map-schemas)))
 
-
 (defn get-map-schema [s]
   (let [s      (m/deref s)
         s-type (m/type s)]
     (cond (= :map s-type) s
-          (#{:or :and} s-type)
+          (#{:and} s-type)
           (get-map-schema-from-seq (m/children s)))))
 
-(def supported-schema-types #{:map})
+(def supported-schema-types #{:map :and})
 
 ;; need a helper function that takes two schemas which are map schemas,
 ;; but may be refs - so you deref both first
@@ -73,6 +72,28 @@
         children2 (map first (m/children (m/deref m2)))]
     (= children1 children2)))
 
+(defn filter-by-ns
+  "a-ns is either a set of keywords or one keyword."
+  [a-ns m]
+  (let [ns-set (if (keyword? a-ns) #{(name a-ns)} (into #{} (map name) a-ns))]
+    (println "ns set: " ns-set)
+    (->>
+      (keys m)
+      (filter #(contains? ns-set (namespace %)))
+      (select-keys m))))
+
+
+(defn filter-by-*ns* [m]
+  (filter-by-ns (keyword (str *ns*)) m))
+
+(comment
+  (into #{} (map name) #{:space.matterandvoid.malli-gen-eql-pull})
+  (namespace ::hello)
+  (filter-by-ns #{:space.matterandvoid.malli-gen-eql-pull}
+    {::hello 5
+     :other  100}))
+
+
 (defn map->eql-pull-vector
   "Given a malli schema returns a query vector
 
@@ -85,8 +106,10 @@
   ;(prn ::pull-vector orig-schema)
   ;(println (apply str (repeat 80 "-")))
   (let [schema (m/deref orig-schema)
-        {:keys [pull-depth] :or {pull-depth 3}} (m/properties schema)
-        _      (assert (supported-schema-types (m/type schema)) (str "Invalid schema. Supports: " (pr-str supported-schema-types)))
+
+        {::keys [pull-depth] :or {pull-depth 3}} (m/properties schema)
+        _      (assert (supported-schema-types (m/type schema))
+                 (str "Invalid schema. Supports: " (pr-str supported-schema-types)))
         ;_      (println "schema type: " (pr-str (m/type schema)))
         entry->pull-item
                (fn ->pull [entry]
@@ -102,7 +125,7 @@
                            recursive? (or
                                         (map-schemas-equal? ref-schema orig-schema)
                                         (map-schemas-equal? (get-map-schema ref-schema) (get-map-schema orig-schema)))
-                           #_#__          (println "orig schema get-map: " (pr-str (get-map-schema orig-schema)))]
+                           #_#__ (println "orig schema get-map: " (pr-str (get-map-schema orig-schema)))]
                        (if recursive?
                          {prop-name pull-depth}
                          (do

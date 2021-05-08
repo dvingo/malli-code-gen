@@ -1,13 +1,14 @@
 (ns space.matterandvoid.data-model.task
   (:require
     [malli.core :as m]
+    [malli.error :as me]
+    [malli.transform :as mt]
     [malli.util :as mu]
     [space.matterandvoid.data-model.comment :as comment]
     [space.matterandvoid.data-model.db :as db]
     [space.matterandvoid.malli-registry :as reg]
-    [space.matterandvoid.util :as u]
-    [malli.transform :as mt]
-    [malli.error :as me]))
+    [space.matterandvoid.util :as u1]
+    [space.matterandvoid.util2 :as u]))
 
 (def task-schema
   {::id          :uuid
@@ -35,9 +36,17 @@
                   [:fn (fn [{::db/keys [created-at updated-at]}]
                          #?(:clj  (<= (.compareTo created-at updated-at) 0)
                             :cljs (<= created-at updated-at)))]]})
+(reg/register! task-schema)
 
-(type (m/form ::id))
 (comment
+  (m/properties (m/schema ::task2))
+  (m/properties (m/deref ::task2))
+  (m/children (m/deref ::task2))
+  (m/type (m/deref ::task2))
+
+  (m/options (m/deref ::task2))
+  (m/-schema-schema (m/deref ::task2))
+  (type (m/form ::id))
   (m/decode ::task {} (mt/default-value-transformer
                         {:defaults {:map               (fn [v] {:default? true})
                                     :malli.core/schema (fn [v] (println "id v: " v)
@@ -48,7 +57,6 @@
                                     ::another          (constantly {})
                                     :uuid              (fn [v] (println "v: " v)
                                                          (u/uuid))}})))
-(reg/register! task-schema)
 
 (def task-defaults
   {:defaults {:malli.core/schema

@@ -1,13 +1,16 @@
-(ns dan-play
+(ns space.matterandvoid.dan-play
   (:require
     [clojure.java.io :as io]
+    [clojure.walk :refer [postwalk]]
     [malli-study.dot :as md]
     [malli.clj-kondo :as mk]
     [malli.core :as m]
+    [malli.error :as me]
     [malli.generator :as mg]
     [malli.provider :as mp]
     [malli.registry :as mr]
     [malli.transform :as mt]
+    [malli.dot :as dot]
     [malli.util :as mu]
     [space.matterandvoid.data-model.comment :as comment]
     [space.matterandvoid.data-model.db :as db]
@@ -515,3 +518,339 @@
     [:schema
      {:registry {"comment" (m/form (m/deref ::comment/comment))}}])
   )
+
+(defn map-keys [m f]
+  (assert (map? m))
+  (assert (fn? f))
+  (into {} (map (juxt (comp f key) val)) m))
+
+(defn map-vals [m f] (into {} (map (juxt key (comp f val)) m)))
+
+(comment
+
+  {::id          :uuid
+   ::description :string
+   ::comments    [:vector [:ref ::comment/comment]]
+   ::sub-tasks   [:vector [:ref ::task]]
+   ::sub-tasks2  [:vector [:ref ::task2]]
+   ::task
+                 [:map
+                  ::id
+                  ::description
+                  [::comments {:default []}]
+                  [::sub-tasks {:optional true}]
+                  [::db/updated-at {:optional true}]
+                  [::db/created-at {:optional true}]]
+
+   ::task2       [:and
+                  [:map
+                   ::id
+                   ::description
+                   ::comments
+                   [::sub-tasks2 {:optional true}]
+                   [::db/updated-at {:optional true}]
+                   [::db/created-at {:optional true}]]
+                  [:fn (fn [{::db/keys [created-at updated-at]}]
+                         #?(:clj  (<= (.compareTo created-at updated-at) 0)
+                            :cljs (<= created-at updated-at)))]]}
+
+
+  [:schema
+   {:registry
+    {::id          :uuid
+     ::description :string
+     ::comments    [:vector [:ref ::comment/comment]]
+     ::sub-tasks   [:vector [:ref ::task]]
+     ::sub-tasks2  [:vector [:ref ::task2]]
+     ::task
+                   [:map
+                    ::id
+                    ::description
+                    [::comments {:default []}]
+                    [::sub-tasks {:optional true}]
+                    [::db/updated-at {:optional true}]
+                    [::db/created-at {:optional true}]]
+
+     ::task2       [:and
+                    [:map
+                     ::id
+                     ::description
+                     ::comments
+                     [::sub-tasks2 {:optional true}]
+                     [::db/updated-at {:optional true}]
+                     [::db/created-at {:optional true}]]
+                    [:fn (fn [{::db/keys [created-at updated-at]}]
+                           (<= created-at updated-at))]]}}
+   ::task2]
+
+  )
+(def base-schema
+  {::id          :uuid
+   ::description :string
+   ::comments    [:vector [:ref ::comment/comment]]
+   ::sub-tasks   [:vector [:ref ::task]]
+   ::sub-tasks2  [:vector [:ref ::task2]]
+   ::task
+                 [:map
+                  ::id
+                  ::description
+                  [::comments {:default []}]
+                  [::sub-tasks {:optional true}]
+                  [::db/updated-at {:optional true}]
+                  [::db/created-at {:optional true}]]
+
+   ::task2       [:and
+                  [:map
+                   ::id
+                   ::description
+                   ::comments
+                   [::sub-tasks2 {:optional true}]
+                   [::db/updated-at {:optional true}]
+                   [::db/created-at {:optional true}]]
+                  [:fn (fn [{::db/keys [created-at updated-at]}]
+                         (<= created-at updated-at))]]})
+
+(def reg (merge base-schema
+           comment/comment-schema
+           db/db-schema))
+
+(def map-schema-shape
+  [:catn
+   [:map-kw [:= :map]]
+   [:ref [:+ [:orn
+              [:kw qualified-keyword?]
+              [:ref-schema [:tuple qualified-keyword? [:maybe :map]]]]]]])
+
+(defn parse-schema-shape [s]
+  (m/parse map-schema-shape
+    (-> s ->schema m/form)))
+
+(comment
+  (parse-schema-shape ::task)
+  )
+
+(comment
+  (m/parse map-schema-shape (m/form (->schema ::task)))
+  (->
+    (parse-schema-shape ::task)
+    (update :ref
+      (fn [children]
+        (->> children
+          (map
+            ()
+            (fn [c])
+
+            )
+          )))))
+
+(comment
+  (as-> [:map
+         :dan-play/id
+         :dan-play/description
+         [:dan-play/comments {:default []}]
+         [:dan-play/sub-tasks {:optional true}]
+         [:space.matterandvoid.data-model.db/updated-at {:optional true}]
+         [:space.matterandvoid.data-model.db/created-at {:optional true}]]
+    $
+    ;(m/explain map-schema-shape $)
+    ;(me/humanize (m/explain map-schema-shape $))
+    (m/parse map-schema-shape $)
+    )
+  )
+(comment
+  (m/form map-schema-shape)
+  (m/type map-schema-shape)
+  (m/type (m/schema map-schema-shape))
+  (m/explain map-schema-shape (m/form (->schema ::task)))
+  (m/parse map-schema-shape (->schema ::task)))
+
+(def reg-map (merge (m/default-schemas) {:registry reg}))
+;(m/default-schemas)
+
+(defn ->schema [t]
+  (-> [:schema reg-map t] (m/deref) (m/deref)))
+
+
+(defmulti ->schema-val type)
+(defmethod ->schema-val keyword? [x] x)
+(defmethod ->schema-val keyword? [x] x)
+(defmethod ->schema-val vector? [x]
+  )
+
+
+;; take a plain clojure map
+;; 1. convert the keys to string
+;; 2. convert the vals using (transform-val)
+;; 3. this will take the value and convert to strings as needed.
+
+(defn get-map-schema-from-seq
+  "Given a seq of schemas, asserts there is only one :map schema and returns that."
+  [s]
+  (println "get map schema from seq: " s)
+  (let [map-schemas (filter #(= (m/type %) :map) s)]
+    (assert (= (count map-schemas) 1))
+    (first map-schemas)))
+
+(defn get-map-schema
+  ([s] (get-map-schema s nil))
+  ([s opts]
+   (let [s      (m/deref s opts)
+         s-type (m/type s opts)]
+     (cond (= :map s-type) s
+           (#{:and} s-type)
+           (get-map-schema-from-seq (m/children s opts))))))
+
+
+(defn transform-nested-prop [p]
+  (cond
+    (qualified-keyword? p)
+    (str p)
+
+    (vector? p)
+    (let [[kw _ children :as form] p]
+
+      (cond
+        (= :vector kw)
+        (let [[k v] children]
+          (if (= :ref k)
+            [k (str v)]
+            children))
+
+        :else
+        (-> form
+          (assoc 0 (str kw))
+          (cond->
+            (seq children)
+            (update-in [2 :children 0] str)))))
+
+    :else p))
+
+
+
+(comment (fqn-schema->str-keys base-schema immutable-reg))
+(defn transform-val [v opts]
+  (println "transform: " v)
+  (let [{:keys [type children] :as m} (mu/to-map-syntax v opts)]
+    (println "after to map syntax type: " type)
+    (println " children : " children)
+    (cond
+      (#{:and :map} type)
+      (do
+        (println "first cond: " v)
+        (println "first cond: " (get-map-schema v opts))
+        (println "type: " (type (get-map-schema v opts)))
+        (println "mtype: " (m/type (get-map-schema v opts)))
+        (println "mform : " (m/form (get-map-schema v opts)))
+        (->>
+          (m/form (get-map-schema v opts))
+          (mapv (fn [k] (transform-nested-prop k)))
+          #_(map
+              #(transform-val % opts))))
+
+      (qualified-keyword? v)
+      (do
+        (println "second cond")
+        (str v))
+      (and (= :vector type) (= (-> children first :type) :ref))
+      (let [c (-> children first :children first str)]
+        [:vector [:ref c]])
+
+
+      #_#_(= :vector type)
+          (do
+
+            (println ":vector children: " children)
+            (let [[r _ v]]
+              )
+
+            [type (update children)])
+
+      (vector? v)
+      (do
+        (println "third cond ")
+        (let [[kw _ children :as form] v]
+          (-> form
+            (assoc 0 (str kw))
+            (cond->
+              (seq children)
+              (update-in [2 :children 0] str)))))
+
+
+      :else
+      v)))
+
+(def immutable-reg (merge (m/default-schemas) reg))
+
+
+(defn fqn-schema->str-keys
+  [s registry]
+  (-> s
+    (map-keys str)
+    (map-vals #(transform-val % {:registry registry}))))
+
+(comment
+  (fqn-schema->str-keys base-schema immutable-reg)
+  (-> base-schema
+    (map-keys str)
+    (map-vals #(transform-val % {:registry immutable-reg}))))
+
+
+(comment
+  (fqn-schema->str-keys reg immutable-reg)
+  (fqn-schema->str-keys base-schema immutable-reg)
+  )
+
+
+(comment
+  (def Task
+    [:schema
+     {:registry
+      (fqn-schema->str-keys base-schema immutable-reg)} ":dan-play/task"]))
+
+
+
+(def Task
+  [:schema
+   {:registry
+
+    {":space.matterandvoid.dan-play/comments"          [:vector [:ref ":space.matterandvoid.data-model.comment/comment"]],
+     ":space.matterandvoid.data-model.db/updated-at"   :any,
+     ":space.matterandvoid.dan-play/id"                :uuid,
+     ":space.matterandvoid.data-model.db/created-at"   :any,
+     ":space.matterandvoid.data-model.comment/replies" [:vector [:ref ":space.matterandvoid.data-model.comment/comment"]],
+     ":space.matterandvoid.dan-play/sub-tasks2"        [:vector [:ref ":space.matterandvoid.dan-play/task2"]],
+     ":space.matterandvoid.dan-play/task2"             [:map
+                                                        ":space.matterandvoid.dan-play/id"
+                                                        ":space.matterandvoid.dan-play/description"
+                                                        ":space.matterandvoid.dan-play/comments"
+                                                        [":space.matterandvoid.dan-play/sub-tasks2" {:optional true}]
+                                                        [":space.matterandvoid.data-model.db/updated-at" {:optional true}]
+                                                        [":space.matterandvoid.data-model.db/created-at" {:optional true}]],
+     ":space.matterandvoid.data-model.comment/comment" [:map
+                                                        {:doc-string "A comment is a textual content that can be attached to another entity."}
+                                                        ":space.matterandvoid.data-model.comment/id"
+                                                        ":space.matterandvoid.data-model.comment/content"
+                                                        [":space.matterandvoid.data-model.comment/replies" {:optional true}]
+                                                        ":space.matterandvoid.data-model.db/updated-at"
+                                                        ":space.matterandvoid.data-model.db/created-at"],
+     ":space.matterandvoid.data-model.comment/id"      :uuid,
+     ":space.matterandvoid.dan-play/sub-tasks"         [:vector [:ref ":space.matterandvoid.dan-play/task"]],
+     ":space.matterandvoid.dan-play/description"       :string,
+     ":space.matterandvoid.data-model.comment/content" :string,
+     ":space.matterandvoid.dan-play/task"              [:map
+                                                        ":space.matterandvoid.dan-play/id"
+                                                        ":space.matterandvoid.dan-play/description"
+                                                        [":space.matterandvoid.dan-play/comments" {:default []}]
+                                                        [":space.matterandvoid.dan-play/sub-tasks" {:optional true}]
+                                                        [":space.matterandvoid.data-model.db/updated-at" {:optional true}]
+                                                        [":space.matterandvoid.data-model.db/created-at" {:optional true}]]}}
+   ":space.matterandvoid.dan-play/task"])
+
+(comment
+  (spit
+    "malli-dot-schema.dot"
+    (dot/transform Task))
+  )
+
+
+

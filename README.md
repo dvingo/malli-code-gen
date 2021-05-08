@@ -1,3 +1,34 @@
+2021-05-08 
+
+in ns:
+space.matterandvoid.dan-play
+
+this fn:
+
+(fqn-schema->str-keys reg immutable-reg)
+
+gives you a schema that can be passed to the malli.dot/transform ns to generate a graphviz picture 
+from your schema.
+
+it is a hack by converting keyword keys to strings, but it works.
+
+
+First you call that helper - then 
+```clojure
+(spit
+    "malli-dot-schema.dot"
+    (dot/transform Task))
+```
+
+then output a visual file:
+
+```bash
+dot -Tpdf malli-dot-schema.dot  -omalli-schema.pdf
+```
+
+todo: any inline function literals will fail you'll have to make a -simple-schema out of them.
+
+
 # Playing around
 
 install gnu make > 4.0
