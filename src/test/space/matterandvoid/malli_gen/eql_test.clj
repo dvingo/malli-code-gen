@@ -1,8 +1,9 @@
-(ns malli-code-gen.gen-eql-test
-  (:require [clojure.test :as t :refer [deftest is testing]]
-            [malli-code-gen.test-utils :as tu]
-            [malli-code-gen.test-schema2 :as ts2]
-            [malli-code-gen.gen-eql :as eql]))
+(ns space.matterandvoid.malli-gen.eql-test
+  (:require
+    [clojure.test :refer [deftest is testing]]
+    [space.matterandvoid.malli-gen.eql :as geql]
+    [space.matterandvoid.malli-gen.test-schema2 :as ts2]
+    [space.matterandvoid.malli-gen.test-utils :as tu]))
 
 
 (def exp-vector
@@ -29,7 +30,7 @@
    ::ts2/created-at])
 
 (deftest schema->eql-pull-test
-  (is (= exp-vector (eql/schema->eql-pull ts2/schema:task))))
+  (is (= exp-vector (geql/schema->eql-pull ts2/schema:task nil))))
 
 (comment
   (t/test-ns 'malli-code-gen.gen-eql-test))

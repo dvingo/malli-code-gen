@@ -1,8 +1,8 @@
-(ns space.matterandvoid.malli-gen-clojure-alpha-specs
+(ns space.matterandvoid.malli-gen.clojure-alpha-specs
   "Generate clojure/spec-alpha2 specs from malli specs"
   (:require [malli.core :as m]
-            [space.matterandvoid.util2 :as u]
-            [space.matterandvoid.test-schema2 :as ts2]
+            [space.matterandvoid.malli-gen.util2 :as u]
+            [space.matterandvoid.malli-gen.test-schema2 :as ts2]
             [clojure.spec.alpha :as s]
             [malli.util :as mu]))
 
@@ -56,18 +56,19 @@
       (composite-schema->spec-def schema))
     schema))
 
-(assert
-  (= '(s/coll-of string? :kind set?)
-     (-> ts2/schema:task (u/get-map-schema)
-         (mu/get ::ts2/tags)
-         (schema->spec-def))))
+(comment
+  (assert
+    (= '(s/coll-of string? :kind set?)
+      (-> ts2/schema:task (u/get-map-schema)
+        (mu/get ::ts2/tags)
+        (schema->spec-def)))))
 
-(assert
-  (= 'string?
-     (-> ts2/schema:task (u/get-map-schema)
-         (mu/get ::ts2/description)
-         (schema->spec-def))))
-
+(comment
+  (assert
+    (= 'string?
+      (-> ts2/schema:task (u/get-map-schema)
+        (mu/get ::ts2/description)
+        (schema->spec-def)))))
 
 (defn- -map->prop-specs
   "generate a list of specs for props
@@ -89,19 +90,20 @@
 (comment
   (-map->prop-specs (u/get-map-schema ts2/schema:user) {::defined-props #{}}))
 
-(assert
-  (= ['((s/def ::ts2/tags (s/coll-of string? :kind set?))
-        (s/def ::ts2/description string?)
-        (s/def ::ts2/global? boolean?)
-        (s/def ::ts2/subtasks (s/coll-of ::ts2/task :kind vector?))
-        (s/def ::ts2/updated-at inst?)
-        (s/def ::ts2/created-at inst?))
-      #{::ts2/subtasks ::ts2/global? ::ts2/tags ::ts2/description
-        ::ts2/id ::ts2/created-at ::ts2/updated-at}]
-     (-map->prop-specs
-       (u/get-map-schema ts2/schema:task)
-       {::entity-types #{::ts2/user}
-        ::defined-props #{::ts2/id}})))
+(comment
+  (assert
+    (= ['((s/def ::ts2/tags (s/coll-of string? :kind set?))
+          (s/def ::ts2/description string?)
+          (s/def ::ts2/global? boolean?)
+          (s/def ::ts2/subtasks (s/coll-of ::ts2/task :kind vector?))
+          (s/def ::ts2/updated-at inst?)
+          (s/def ::ts2/created-at inst?))
+        #{::ts2/subtasks ::ts2/global? ::ts2/tags ::ts2/description
+          ::ts2/id ::ts2/created-at ::ts2/updated-at}]
+      (-map->prop-specs
+        (u/get-map-schema ts2/schema:task)
+        {::entity-types  #{::ts2/user}
+         ::defined-props #{::ts2/id}}))))
 
 
 (defn is-req-prop? [[prop-name options schema]]
@@ -122,17 +124,17 @@
                     (into [:opt opt-props]))))))
 
 
-(assert (= '(s/def ::ts2/task
-              (s/keys :req [::ts2/id
-                            ::ts2/user
-                            ::ts2/tags
-                            ::ts2/description]
-                      :opt [::ts2/global?
-                            ::ts2/subtasks
-                            ::ts2/updated-at
-                            ::ts2/created-at]))
-           (map->keys-spec ::ts2/task (u/get-map-schema ts2/schema:task))))
-
+(comment
+  (assert (= '(s/def ::ts2/task
+                (s/keys :req [::ts2/id
+                              ::ts2/user
+                              ::ts2/tags
+                              ::ts2/description]
+                  :opt [::ts2/global?
+                        ::ts2/subtasks
+                        ::ts2/updated-at
+                        ::ts2/created-at]))
+            (map->keys-spec ::ts2/task (u/get-map-schema ts2/schema:task)))))
 
 (defn map->spec-set
   [spec-name

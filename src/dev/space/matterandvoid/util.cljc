@@ -143,7 +143,13 @@
 
 ;; the hard mode is to convert all of this to macros to be consumed from cljs
 ;; to get a literal symbol in place for cljs resolve
+
 ;; or get rid of resolve
+;;
+;; todo
+;; update to use this setup:
+;; https://github.com/bsless/malli-keys-relations
+;; send PR for cljs support and maybe dates
 
 #?(:clj (defn -comparator-relation-schemas
           []

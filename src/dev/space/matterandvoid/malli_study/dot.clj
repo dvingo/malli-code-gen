@@ -1,4 +1,4 @@
-(ns malli-study.dot
+(ns space.matterandvoid.malli-study.dot
   "Clone of malli dot to study transforms in detail"
   (:require [malli.core :as m]
             [malli.util :as mu]

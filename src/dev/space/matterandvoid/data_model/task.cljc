@@ -1,13 +1,13 @@
 (ns space.matterandvoid.data-model.task
   (:require
     [malli.core :as m]
+    [malli.error :as me]
+    [malli.transform :as mt]
     [malli.util :as mu]
     [space.matterandvoid.data-model.comment :as comment]
     [space.matterandvoid.data-model.db :as db]
     [space.matterandvoid.malli-registry :as reg]
-    [space.matterandvoid.util2 :as u]
-    [malli.transform :as mt]
-    [malli.error :as me]))
+    [space.matterandvoid.util :as u]))
 
 (def task-schema
   {::id          :uuid
@@ -36,8 +36,8 @@
                          #?(:clj  (<= (.compareTo created-at updated-at) 0)
                             :cljs (<= created-at updated-at)))]]})
 
-(type (m/form ::id))
 (comment
+  (type (m/form ::id))
   (m/decode ::task {} (mt/default-value-transformer
                         {:defaults {:map               (fn [v] {:default? true})
                                     :malli.core/schema (fn [v] (println "id v: " v)
@@ -101,7 +101,9 @@
                   :errors (me/humanize (m/explain ::task task))}))))
     task))
 
-(m/=> create-task [:=> [:cat :map] ::task])
+;; only works with a custom default schema registry?
+
+;(m/=> create-task [:=> [:cat :map] ::task])
 
 (comment
   (me/humanize (m/explain ::task {}))

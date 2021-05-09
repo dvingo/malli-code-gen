@@ -1,10 +1,10 @@
-(ns malli-code-gen.gen-eql
+(ns space.matterandvoid.malli-gen.eql
   "Generate EQL pull vectors from schemas
   EQL reference https://github.com/edn-query-language/eql#eql-for-selections"
   (:require [malli.util :as mu]
             [malli.core :as m]
-            [malli-code-gen.test-schema :as ts1]
-            [malli-code-gen.util :as u]))
+            [space.matterandvoid.malli-gen.test-schema :as ts1]
+            [space.matterandvoid.malli-gen.util :as u]))
 
 (comment
   "Main members are:"
@@ -15,8 +15,7 @@
   ; [2] Crux pull https://opencrux.com/reference/queries.html#pull
 
 
-(def schema:task
-  malli-code-gen.test-schema/schema:task)
+(def schema:task ts1/schema:task)
 
 
 (def composite-schema-types

@@ -1,5 +1,5 @@
-(ns space.matterandvoid.api
-  (:require [malli-code-gen.gen-eql]))
+(ns space.matterandvoid.malli-gen.api
+  (:require [space.matterandvoid.malli-gen.eql :as geql]))
 
 
 (defn schema->eql
@@ -7,4 +7,4 @@
 
   Schema can be a [:schema ...] or [:map ...]"
   [schema opts]
-  (malli-code-gen.gen-eql/schema->eql-pull schema opts))
+  (geql/schema->eql-pull schema opts))

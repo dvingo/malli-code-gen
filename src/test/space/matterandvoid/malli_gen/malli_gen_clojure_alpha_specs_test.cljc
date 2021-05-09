@@ -1,7 +1,8 @@
 (ns space.matterandvoid.malli-gen-clojure-alpha-specs-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [space.matterandvoid.test-schema2 :as ts2]
-            [space.matterandvoid.malli-gen-clojure-alpha-specs :as spec-gen]))
+  (:require
+    [clojure.test :refer [deftest is testing]]
+    [space.matterandvoid.malli-gen.clojure-alpha-specs :as spec-gen]
+    [space.matterandvoid.malli-gen.test-schema2 :as ts2]))
 
 (def expected1
   ['(s/def ::ts2/id uuid?)

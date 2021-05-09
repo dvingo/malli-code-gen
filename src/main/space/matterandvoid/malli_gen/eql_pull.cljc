@@ -1,9 +1,9 @@
-(ns space.matterandvoid.malli-gen-eql-pull
+(ns space.matterandvoid.malli-gen.eql-pull
   "Generate EQL pull vectors from schemas
   EQL reference https://github.com/edn-query-language/eql#eql-for-selections"
   (:require
     [malli.core :as m]
-    [space.matterandvoid.util2 :as u])
+    [space.matterandvoid.malli-gen.util2 :as u])
   #?(:clj (:import [clojure.lang ExceptionInfo])))
 
 (comment
@@ -86,9 +86,9 @@
   ;(prn ::pull-vector orig-schema)
   ;(println (apply str (repeat 80 "-")))
   (let [schema (m/deref orig-schema)
-        {::mcg/keys [pull-depth] :or {pull-depth 3}} (m/properties schema)
+        {:space.matterandvoid.malli-gen.eql-pull/keys [pull-depth] :or {pull-depth 3}} (m/properties schema)
         _      (assert (supported-schema-types (m/type schema))
-                       (str "Invalid schema. Supports: " (pr-str supported-schema-types)))
+                 (str "Invalid schema. Supports: " (pr-str supported-schema-types)))
         ;_      (println "schema type: " (pr-str (m/type schema)))
         entry->pull-item
                (fn ->pull [entry]
@@ -104,7 +104,7 @@
                            recursive? (or
                                         (map-schemas-equal? ref-schema orig-schema)
                                         (map-schemas-equal? (get-map-schema ref-schema) (get-map-schema orig-schema)))
-                           #_#__          (println "orig schema get-map: " (pr-str (get-map-schema orig-schema)))]
+                           #_#__ (println "orig schema get-map: " (pr-str (get-map-schema orig-schema)))]
                        (if recursive?
                          {prop-name pull-depth}
                          (do

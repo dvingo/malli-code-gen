@@ -1,4 +1,4 @@
-(ns malli-code-gen.test-utils
+(ns space.matterandvoid.malli-gen.test-utils
   "matcher for quick value matching")
 
 

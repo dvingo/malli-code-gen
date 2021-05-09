@@ -1,6 +1,5 @@
-(ns space.matterandvoid.test-schema
+(ns space.matterandvoid.malli-gen.test-schema
   "Dev scaffolding, to be removed later")
-
 
 (def registry:main
   {:e/id         pos-int?
