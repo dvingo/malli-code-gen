@@ -88,6 +88,10 @@ https://juxt-oss.zulipchat.com/#narrow/stream/194466-crux/topic/Querying.20for.2
 
 # Inspiration & prior art
 
+low code env to check out, esp their use of react components:
+
+https://github.com/lowdefy/lowdefy
+
 malli -> clj-kondo config
 
 https://github.com/metosin/malli#clj-kondo
