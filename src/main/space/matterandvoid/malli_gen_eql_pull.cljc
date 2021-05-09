@@ -1,18 +1,21 @@
 (ns space.matterandvoid.malli-gen-eql-pull
+  "Generate EQL pull vectors from schemas
+  EQL reference https://github.com/edn-query-language/eql#eql-for-selections"
   (:require
-    [malli.core :as m])
+    [malli.core :as m]
+    [space.matterandvoid.util2 :as u])
   #?(:clj (:import [clojure.lang ExceptionInfo])))
 
-(defn ref-coll->reffed
-  "Takes a ref schema, this probably needs to be updated to support refs where you want to
-  add :and constraints just like the root schema."
-  [ref-coll-schema]
-  (-> ref-coll-schema
-    (m/deref)
-    (m/children) (first)
-    (m/children) (first)))
+(comment
+  "Main members are:"
+  space.matterandvoid.malli-gen-eql-pull/map->eql-pull-vector
+  "EQL reference")
+; [1] https://github.com/edn-query-language/eql#eql-for-selections
+; [2] Crux pull https://opencrux.com/reference/queries.html#pull
+
 
 (defn ->schema
+  "Huh?"
   [s]
   (cond-> s (not (m/schema? s)) m/deref))
 
@@ -26,8 +29,6 @@
         nil
         (throw e)))))
 
-(defn ref-schema? [x] (satisfies? m/RefSchema x))
-
 (def composite-schema-types
   #{:vector :map :list :set ::m/schema :and})
 
@@ -36,7 +37,7 @@
     (and
       (= :vector (m/type s))
       (= (count (m/children s)) 1)
-      (ref-schema? (first (m/children s))))))
+      (u/ref-schema? (first (m/children s))))))
 
 (defn atomic-prop? [prop-name schema]
   (not
@@ -53,7 +54,7 @@
 
 
 (defn get-map-schema [s]
-  (let [s      (m/deref s)
+  (let [s      (m/deref s) ; maybe a double deref right away?
         s-type (m/type s)]
     (cond (= :map s-type) s
           (#{:or :and} s-type)
@@ -85,8 +86,9 @@
   ;(prn ::pull-vector orig-schema)
   ;(println (apply str (repeat 80 "-")))
   (let [schema (m/deref orig-schema)
-        {:keys [pull-depth] :or {pull-depth 3}} (m/properties schema)
-        _      (assert (supported-schema-types (m/type schema)) (str "Invalid schema. Supports: " (pr-str supported-schema-types)))
+        {::mcg/keys [pull-depth] :or {pull-depth 3}} (m/properties schema)
+        _      (assert (supported-schema-types (m/type schema))
+                       (str "Invalid schema. Supports: " (pr-str supported-schema-types)))
         ;_      (println "schema type: " (pr-str (m/type schema)))
         entry->pull-item
                (fn ->pull [entry]
@@ -95,7 +97,7 @@
                    ;(println "options: " options)
                    (if (atomic-prop? prop-name child-schema)
                      prop-name
-                     (let [ref-schema (ref-coll->reffed child-schema)
+                     (let [ref-schema (u/ref-coll->reffed child-schema)
                            ;_          (println "REF schema: " (pr-str ref-schema))
                            ;_          (println "REF schema get map: " (pr-str (get-map-schema ref-schema)))
                            ;_          (println "orig schema: " (pr-str orig-schema))
@@ -118,3 +120,4 @@
     (let [map-schema (get-map-schema schema)]
       ;(prn "chidren of schema: " (m/children map-schema))
       (mapv entry->pull-item (m/children map-schema)))))
+

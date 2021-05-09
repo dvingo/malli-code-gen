@@ -150,3 +150,25 @@
 
 ; I may have underexplored schema walk
 ; but in our case we would benefit from the post order tra
+
+
+
+; this type of walk also failed - shallow
+(m/walk
+  ts1/schema:task
+  (fn [schema, path, walked-children, options]
+      (prn ::path path walked-children options)
+      (prn ::schema schema)
+      (prn ::type (m/type schema))
+      (m/deref (m/deref schema)))
+  {})
+
+; this gives overflow
+(defn walk1 [schema-in, path, walked-children, options]
+      (prn ::path path walked-children options)
+      (prn ::schema schema-in)
+      (prn ::type (m/type schema-in))
+      (if (u/ref-schema? schema-in)
+        (m/walk (m/deref (m/deref schema-in)) walk1 options)
+        schema-in))
+
