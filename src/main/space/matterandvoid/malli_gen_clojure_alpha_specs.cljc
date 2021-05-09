@@ -57,7 +57,7 @@
     schema))
 
 (assert
-  (= (list 's/coll-of 'string? :kind 'set?)
+  (= '(s/coll-of string? :kind set?)
      (-> ts2/schema:task (u/get-map-schema)
          (mu/get ::ts2/tags)
          (schema->spec-def))))
@@ -110,6 +110,7 @@
 
 (defn map->keys-spec [spec-name map-schema]
   (let [ch-props (m/children map-schema)
+        ; todo add support for :req-un
         req-props (mapv first (filterv is-req-prop? ch-props))
         opt-props (mapv first (filterv is-opt-prop? ch-props))]
     (list *s-def-symbol* spec-name,
@@ -121,15 +122,15 @@
                     (into [:opt opt-props]))))))
 
 
-(assert (= (list 's/def ::ts2/task
-                 (list 's/keys :req [::ts2/id
-                                     ::ts2/user
-                                     ::ts2/tags
-                                     ::ts2/description]
-                       :opt [::ts2/global?
-                             ::ts2/subtasks
-                             ::ts2/updated-at
-                             ::ts2/created-at]))
+(assert (= '(s/def ::ts2/task
+              (s/keys :req [::ts2/id
+                            ::ts2/user
+                            ::ts2/tags
+                            ::ts2/description]
+                      :opt [::ts2/global?
+                            ::ts2/subtasks
+                            ::ts2/updated-at
+                            ::ts2/created-at]))
            (map->keys-spec ::ts2/task (u/get-map-schema ts2/schema:task))))
 
 
@@ -152,7 +153,8 @@
 
 
 (defn map->all-specs
-  "Generate complete set of spec defs for your malli specs"
+  "Generate complete set of spec defs for your malli specs
+  {:spec-name [:schema]}"
   ([spec-name->malli-schema] (map->all-specs spec-name->malli-schema {}))
   ([spec-name->malli-schema
     {::keys [accumulated-specs defined-props entity-types]
@@ -196,7 +198,8 @@
 
 (defn schemas->all-specs
   "Takes a sequence of malli RefSchemas or their source vectors
-   and returns a list clojure/specs-alpha2 defs"
+   and returns a list clojure/specs-alpha2 defs
+   [[:schema ...]]"
   [schemas]
   (let [schema->spec-name-entry
         (fn [schema]

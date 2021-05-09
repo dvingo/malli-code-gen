@@ -1,6 +1,5 @@
 (ns space.matterandvoid.malli-gen-clojure-alpha-specs-test
   (:require [clojure.test :refer [deftest is testing]]
-            [clojure.data]
             [space.matterandvoid.test-schema2 :as ts2]
             [space.matterandvoid.malli-gen-clojure-alpha-specs :as spec-gen]))
 
