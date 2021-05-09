@@ -40,7 +40,7 @@ one a configuration file, another visual information that helps us understand ou
 The grander idea is to combine a collection utilities together to produce a running system with pieces collected from various generators.
 
 Perhaps you have a middleware/interceptor in your web service that determines the handler's behavior, multimethod or core.match table
-The entries that go in the core.match table could be provided by the library - they would be variants (todo, ref Janine's talk)
+The entries that go in the core.match table could be provided by the library - they would be variants (see: https://www.youtube.com/watch?v=ZQkIWWTygio)
 
 a vector of fully qualified kw and the params it accepts - they would all just take a map
 
