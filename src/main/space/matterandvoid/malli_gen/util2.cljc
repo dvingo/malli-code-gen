@@ -2,7 +2,7 @@
   (:require
     [malli.core :as m]
     [malli.util :as mu]
-    [space.matterandvoid.malli-gen.test-schema :as ts1])
+    [space.matterandvoid.malli-gen.test-schema2 :as ts2])
   (:import (clojure.lang ExceptionInfo)))
 
 (def composite-schema-types
@@ -22,7 +22,7 @@
         false
         (throw e)))))
 (comment
-  (ref-schema? ts1/schema:task))
+  (ref-schema? ts2/schema:task))
 
 
 (defn get-from-registry [root-schema reffed-name]
@@ -33,7 +33,7 @@
       (m/deref (m/schema [:schema root-props reffed-name])))))
 
 (comment
-  (m/schema (get-from-registry ts1/schema:task ::ts1/task)))
+  (m/schema (get-from-registry ts2/schema:task ::ts2/task)))
 
 
 (defn schema-type [schema]
@@ -45,9 +45,9 @@
         (throw e)))))
 
 (assert (= :map
-          (-> (m/deref (m/deref ts1/schema:task))
-            (mu/get ::ts1/user) (m/deref)
-            (schema-type))))
+          (-> (m/deref (m/deref ts2/schema:task))
+              (mu/get ::ts2/user) (m/deref)
+              (schema-type))))
 
 (defn map-schema? [ref-coll-schema]
   (= :map (schema-type ref-coll-schema)))
@@ -93,8 +93,8 @@
 
 (comment
   (map-schemas-equal?
-    ts1/schema:task
-    ts1/schema:task))
+    ts2/schema:task
+    ts2/schema:task))
 
 
 (defn ref-coll->reffed
@@ -109,10 +109,10 @@
       (m/children) (first)
       (m/children) (first))))
 
-(assert (= ::ts1/task
-          (-> (get-map-schema ts1/schema:task)
-            (mu/get ::ts1/subtasks) (m/deref)
-            (ref-coll->reffed))))
+(assert (= ::ts2/task
+           (-> (get-map-schema ts2/schema:task)
+               (mu/get ::ts2/subtasks) (m/deref)
+               (ref-coll->reffed))))
 
 
 (defn coll-schema->pred-symbol [coll-schema]

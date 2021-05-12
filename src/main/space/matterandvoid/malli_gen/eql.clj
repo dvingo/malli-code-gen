@@ -3,8 +3,8 @@
   EQL reference https://github.com/edn-query-language/eql#eql-for-selections"
   (:require [malli.util :as mu]
             [malli.core :as m]
-            [space.matterandvoid.malli-gen.test-schema :as ts1]
-            [space.matterandvoid.malli-gen.util :as u]))
+            [space.matterandvoid.malli-gen.test-schema2 :as ts2]
+            [space.matterandvoid.malli-gen.util2 :as u]))
 
 (comment
   "Main members are:"
@@ -15,7 +15,8 @@
   ; [2] Crux pull https://opencrux.com/reference/queries.html#pull
 
 
-(def schema:task ts1/schema:task)
+(def -schema:task ts2/schema:task)
+(def -schema-map:task (u/get-map-schema ts2/schema:task))
 
 
 (def composite-schema-types
@@ -24,9 +25,6 @@
 (def list-like-types
   #{:vector :list :set})
 
-
-(def schema-map:task
-  (m/deref (m/deref schema:task)))
 
 (defn is-prop-atomic? [prop-name et-schema root-schema]
   ;(prn ::is-atomic prop-name et-schema root-schema)
@@ -39,9 +37,9 @@
           prop-schema (cond-> prop-schema schema? m/deref)]
       (not (composite-schema-types (m/type prop-schema))))))
 
-(assert (is-prop-atomic? ::ts1/id schema-map:task schema:task))
-(assert (not (is-prop-atomic? ::ts1/user schema-map:task schema:task)))
-(assert (not (is-prop-atomic? ::ts1/subtasks schema-map:task schema:task)))
+(assert (is-prop-atomic? ::ts2/id -schema-map:task ts2/schema:task))
+(assert (not (is-prop-atomic? ::ts2/user -schema-map:task ts2/schema:task)))
+(assert (not (is-prop-atomic? ::ts2/subtasks -schema-map:task ts2/schema:task)))
 
 
 (defn is-ref-coll?
@@ -57,9 +55,9 @@
                                          (= :ref (m/type first-child)))]
           single-child-and-ref?)))))
 
-(assert (not (is-ref-coll? ::ts1/id schema-map:task schema:task)))
-(assert (not (is-ref-coll? ::ts1/user schema-map:task schema:task)))
-(assert (is-ref-coll? ::ts1/subtasks schema-map:task schema:task))
+(assert (not (is-ref-coll? ::ts2/id -schema-map:task ts2/schema:task)))
+(assert (not (is-ref-coll? ::ts2/user -schema-map:task ts2/schema:task)))
+(assert (is-ref-coll? ::ts2/subtasks -schema-map:task ts2/schema:task))
 
 
 (defn ref-coll->reffed [ref-coll-schema]
@@ -135,12 +133,12 @@
 
      (mapv entry->pull-item (m/children et-schema)))))
 
-(assert (= [:goog/id :id :gist] (map->eql-pull-vector ts1/spec:task)))
+(assert (= [:goog/id :id :gist] (map->eql-pull-vector ts2/spec:task)))
 
 (comment
   (m/type e1)
-  (m/entries schema-map:task)
-  (u/prn-walk (m/deref-all schema:task)))
+  (m/entries -schema-map:task)
+  (u/prn-walk (m/deref-all -schema:task)))
 
 
 (defn schema->eql-pull
@@ -161,20 +159,20 @@
 
 (comment
 
-  (schema->eql-pull schema:task)
+  (schema->eql-pull -schema:task)
 
   (m/deref
     (mu/get
-      (m/deref (m/deref schema:task))
-      ::ts1/id))
+      (m/deref (m/deref -schema:task))
+      ::ts2/id))
 
-  (-> (m/type (m/deref (m/deref schema:task))))
+  (-> (m/type (m/deref (m/deref -schema:task))))
 
-  (-> (m/deref (m/deref schema:task))
+  (-> (m/deref (m/deref -schema:task))
       (m/entries)
       (nth 4)
       (second))
 
-  (type (first (m/children schema:task)))
+  (type (first (m/children -schema:task)))
 
-  (m/children schema:task))
+  (m/children -schema:task))

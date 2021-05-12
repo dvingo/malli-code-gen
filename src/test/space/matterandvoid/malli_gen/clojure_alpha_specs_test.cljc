@@ -1,6 +1,6 @@
-(ns space.matterandvoid.malli-gen-clojure-alpha-specs-test
+(ns space.matterandvoid.malli-gen.clojure-alpha-specs-test
   (:require
-    [clojure.test :refer [deftest is testing]]
+    [clojure.test :as t :refer [deftest is testing]]
     [space.matterandvoid.malli-gen.clojure-alpha-specs :as spec-gen]
     [space.matterandvoid.malli-gen.test-schema2 :as ts2]))
 
@@ -30,3 +30,6 @@
 
 (deftest schemas->all-specs-test
   (is (= expected1 (spec-gen/schemas->all-specs [ts2/schema:task ts2/schema:user]))))
+
+(comment
+  (t/test-ns 'space.matterandvoid.malli-gen.clojure-alpha-specs-test))
