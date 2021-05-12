@@ -2,14 +2,15 @@
   (:require
     [malli.core :as m]
     [malli.util :as mu]
-    [space.matterandvoid.malli-gen.test-schema2 :as ts2])
+    [space.matterandvoid.malli-gen.test-schema2 :as ts2]
+    [space.matterandvoid.malli-gen.test-schema3 :as ts3])
   (:import (clojure.lang ExceptionInfo)))
 
 (def composite-schema-types
-  #{:vector :map :list :set ::m/schema :and})
+  #{:vector :map :sequential :set ::m/schema :and})
 
-(def coll-types
-  #{:vector :list :set})
+(def malli-coll-types
+  #{:vector :sequential :set})
 
 (defn prn-walk [schema]
   (m/walk schema (m/schema-walker #(doto % prn))))
@@ -53,19 +54,6 @@
   (= :map (schema-type ref-coll-schema)))
 
 
-(defn is-vec-of-refs? [schema]
-  (let [s (m/deref schema)]
-    (and
-      (= :vector (m/type s))
-      (= (count (m/children s)) 1)
-      (ref-schema? (first (m/children s))))))
-
-(defn schema-atomic? [schema]
-  (not
-    (or
-      (composite-schema-types (m/type (m/deref schema)))
-      (is-vec-of-refs? schema))))
-
 (defn get-map-schema-from-seq
   "Given a seq of schemas, asserts there is only one :map schema and returns that."
   [s]
@@ -73,13 +61,33 @@
     (assert (= (count map-schemas) 1))
     (first map-schemas)))
 
-
 (defn get-map-schema [s]
   (let [s      (m/deref (m/deref s))
         s-type (m/type s)]
     (cond (= :map s-type) s
           (#{:or :and} s-type)
           (get-map-schema-from-seq (m/children s)))))
+
+
+(defn is-seq-of-refs? [schema]
+  (let [s (m/deref schema)]
+    (and
+      (contains? malli-coll-types (m/type s))
+      (= (count (m/children s)) 1)
+      (ref-schema? (first (m/children s))))))
+
+
+(defn schema-atomic?
+  "a single predicate like 'int? is considered an atomic schema"
+  [schema]
+  (let [comp-type? (composite-schema-types (m/type (m/deref schema)))
+        ref-vec? (is-seq-of-refs? schema)]
+    ;(prn ::schema-atomic? comp-type? ref-vec?)
+    (not (or comp-type? ref-vec?))))
+
+(assert (not (schema-atomic?
+               (-> (get-map-schema ts3/schema:task)
+                   (mu/get ::ts3/tags)))))
 
 
 (defn map-schemas-equal?

@@ -20,10 +20,10 @@
 
 
 (def composite-schema-types
-  #{:vector :map :list :set ::m/schema})
+  #{:vector :map :sequential :set ::m/schema})
 
 (def list-like-types
-  #{:vector :list :set})
+  #{:vector :sequential :set})
 
 
 (defn is-prop-atomic? [prop-name et-schema root-schema]

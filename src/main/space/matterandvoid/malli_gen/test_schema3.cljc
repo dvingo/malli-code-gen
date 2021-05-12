@@ -1,13 +1,13 @@
-(ns space.matterandvoid.malli-gen.test-schema2
-  "schema example for tests")
+(ns space.matterandvoid.malli-gen.test-schema3
+  "Dev scaffolding, to be removed later")
 
 (def registry:main
   {:e/id         pos-int?
    :e/address    [:map
                   {:registry {:e.address/street string?
                               :e.address/zip    string?}}
-                  [:zip :e.address/zip]
-                  [:street :e.address/street]]
+                  :e.address/zip
+                  :e.address/street]
 
    ::id          uuid?
    ::description string?
@@ -18,16 +18,21 @@
    ::created-at  inst?
    ::username    string?
    ::subtasks    [:vector [:ref ::task]]
+   ::collaborators [:sequential [:ref ::user]]
+   ::tags        [:set string?]
 
 
    ::user        [:map
                   {:e/type :e.type/user}
-                  ::id ::username :e/address]
+                  ::id ::username
+                  #_:e/address]
 
    ::task        [:map
                   {:e/type :e.type/task}
                   ::id
                   ::user
+                  ::tags
+                  ::collaborators
                   ::description
                   [::global? {:optional true}]
                   [::subtasks {:optional true}]
@@ -41,6 +46,13 @@
   [:schema
    {:registry registry:main}
    ::task])
+
+(def schema:user
+  "spec with external registry
+  satisfies Schema"
+  [:schema
+   {:registry registry:main}
+   ::user])
 
 
 (def spec:task

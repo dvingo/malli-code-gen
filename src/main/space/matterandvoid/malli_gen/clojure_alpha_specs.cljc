@@ -14,11 +14,14 @@
 
 (def coll-type->pred
   {:vector 'vector?
-   :list   'list?
    :set    'set?})
+; malli also has :sequential which can be any kind of homogenous sequence
 
 
-(defn composite-schema->spec-def [comp-schema]
+(defn sequential-schema->spec-def
+  "Generate seq schema"
+  ; https://github.com/metosin/malli#sequence-schemas
+  [comp-schema]
   ;(prn ::comp-schema comp-schema)
   (let [comp-schema (m/deref comp-schema)
         coll-type (m/type comp-schema)
@@ -26,25 +29,20 @@
         item-type (or (u/ref-coll->reffed comp-schema)
                       (u/coll-schema->pred-symbol comp-schema))
         ;_ (prn ::item-type item-type)
-        kind-pred (get coll-type->pred coll-type 'vector?)]
+        kind-pred (get coll-type->pred coll-type)]
     ; can also have :count :min-count :max-count :distinct
     ; see https://clojure.github.io/spec-alpha2/ (find "every")
-    (list *s-coll-of-symbol* item-type :kind kind-pred)))
+    (if kind-pred
+      (list *s-coll-of-symbol* item-type :kind kind-pred)
+      (list *s-coll-of-symbol* item-type))))
 
-(assert (= (list 's/coll-of 'string? :kind 'set?)
+(assert (= '(s/coll-of string?)
+           (-> (m/schema [:sequential string?])
+               (sequential-schema->spec-def))))
+
+(assert (= '(s/coll-of string? :kind set?)
            (-> (m/schema [:set string?])
-               (composite-schema->spec-def))))
-
-(comment
-  (-> ts2/schema:task (u/get-map-schema)
-      (m/children) (nth 2)
-      (nth 2)
-      (m/deref)
-      (composite-schema->spec-def))
-
-  (-> ts2/schema:task (u/get-map-schema)
-      (m/children) (nth 5) (nth 2)
-      (composite-schema->spec-def)))
+               (sequential-schema->spec-def))))
 
 
 (defn schema->spec-def
@@ -53,22 +51,21 @@
   (if (m/schema? schema)
     (if (u/schema-atomic? schema)
       (m/form (m/deref schema))
-      (composite-schema->spec-def schema))
+      (sequential-schema->spec-def schema))
     schema))
 
-(comment
-  (assert
-    (= '(s/coll-of string? :kind set?)
-      (-> ts2/schema:task (u/get-map-schema)
-        (mu/get ::ts2/tags)
-        (schema->spec-def)))))
+(assert
+  (= '(s/coll-of string? :kind set?)
+    (-> ts2/schema:task (u/get-map-schema)
+      (mu/get ::ts2/tags)
+      (schema->spec-def))))
 
-(comment
-  (assert
-    (= 'string?
-      (-> ts2/schema:task (u/get-map-schema)
-        (mu/get ::ts2/description)
-        (schema->spec-def)))))
+(assert
+  (= 'string?
+    (-> ts2/schema:task (u/get-map-schema)
+      (mu/get ::ts2/description)
+      (schema->spec-def))))
+
 
 (defn- -map->prop-specs
   "generate a list of specs for props

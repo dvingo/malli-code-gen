@@ -30,7 +30,7 @@
         (throw e)))))
 
 (def composite-schema-types
-  #{:vector :map :list :set ::m/schema :and})
+  #{:vector :map :sequential :set ::m/schema :and})
 
 (defn is-vec-of-refs? [s]
   (let [s (m/deref s)]

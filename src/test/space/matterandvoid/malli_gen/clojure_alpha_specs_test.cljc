@@ -1,35 +1,57 @@
 (ns space.matterandvoid.malli-gen.clojure-alpha-specs-test
   (:require
     [clojure.test :as t :refer [deftest is testing]]
+    [malli.util :as mu]
+    [malli.core :as m]
     [space.matterandvoid.malli-gen.clojure-alpha-specs :as spec-gen]
-    [space.matterandvoid.malli-gen.test-schema2 :as ts2]))
-
-(def expected1
-  ['(s/def ::ts2/id uuid?)
-   '(s/def ::ts2/tags (s/coll-of string? :kind set?))
-   '(s/def ::ts2/description string?)
-   '(s/def ::ts2/global? boolean?)
-   '(s/def ::ts2/subtasks (s/coll-of ::ts2/task :kind vector?))
-   '(s/def ::ts2/updated-at inst?)
-   '(s/def ::ts2/created-at inst?)
-   '(s/def ::ts2/username string?)
-   '(s/def ::ts2/task
-      (s/keys
-        :req [::ts2/id
-              ::ts2/user
-              ::ts2/tags
-              ::ts2/description]
-        :opt [::ts2/global?
-              ::ts2/subtasks
-              ::ts2/updated-at
-              ::ts2/created-at]))
-   '(s/def
-      ::ts2/user
-      (s/keys :req [::ts2/id ::ts2/username]))])
+    [space.matterandvoid.malli-gen.util2 :as u]
+    [space.matterandvoid.malli-gen.test-schema3 :as ts3]))
 
 
-(deftest schemas->all-specs-test
-  (is (= expected1 (spec-gen/schemas->all-specs [ts2/schema:task ts2/schema:user]))))
+(deftest schema->spec-def-test
+  (let [task-map-schema (u/get-map-schema ts3/schema:task)]
+    (is (= '(s/coll-of string? :kind set?)
+           (-> (mu/get task-map-schema ::ts3/tags)
+               (spec-gen/schema->spec-def))))
+
+    (is (= 'string?
+           (-> (mu/get task-map-schema ::ts3/description)
+               (spec-gen/schema->spec-def))))
+
+    (is (= '(s/coll-of :space.matterandvoid.malli-gen.test-schema3/user)
+           (-> (mu/get (u/get-map-schema ts3/schema:task) ::ts3/collaborators)
+               (spec-gen/schema->spec-def))))))
 
 (comment
+  (schema->spec-def-test))
+
+
+(def expected2
+  '[(s/def ::ts3/id uuid?)
+    (s/def ::ts3/tags (s/coll-of string? :kind set?))
+    (s/def ::ts3/collaborators (s/coll-of ::ts3/user))
+    (s/def ::ts3/description string?)
+    (s/def ::ts3/global? boolean?)
+    (s/def ::ts3/subtasks (s/coll-of ::ts3/task :kind vector?))
+    (s/def ::ts3/updated-at inst?)
+    (s/def ::ts3/created-at inst?)
+    (s/def ::ts3/username string?)
+    (s/def ::ts3/task
+      (s/keys
+        :req [::ts3/id
+              ::ts3/user
+              ::ts3/tags
+              ::ts3/collaborators
+              ::ts3/description]
+        :opt [::ts3/global?
+              ::ts3/subtasks
+              ::ts3/updated-at
+              ::ts3/created-at]))
+    (s/def ::ts3/user (s/keys :req [::ts3/id ::ts3/username]))])
+
+(deftest schemas->all-specs-test
+  (is (= expected2 (spec-gen/schemas->all-specs [ts3/schema:task ts3/schema:user]))))
+
+(comment
+  (spec-gen/schemas->all-specs [ts3/schema:task ts3/schema:user])
   (t/test-ns 'space.matterandvoid.malli-gen.clojure-alpha-specs-test))
