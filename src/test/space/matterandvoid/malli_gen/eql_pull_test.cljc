@@ -2,6 +2,7 @@
   (:require
     [clojure.test :refer [deftest is testing]]
     [space.matterandvoid.data-model.task :as task]
+    [malli.clj-kondo]
     ;[space.matterandvoid.data-model.db :as db]
     ;[space.matterandvoid.data-model.comment :as comment]
     [space.matterandvoid.malli-gen.eql-pull :as sut]
@@ -53,6 +54,6 @@
   ;; need to figure out how to pass a local registry with a ref-schema,
   ;; this does not work:
   (sut/map->eql-pull-vector
-    [:schema {:registry @reg/registry-atom} ::task/task])
+    [:schema {:registry @reg/registry-atom} ::task/task]))
 
-  )
+

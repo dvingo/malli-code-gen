@@ -13,6 +13,7 @@
     (if (and (satisfies? m/RefSchema schema)
           (-> schema m/deref m/type (= ::m/schema)))
       ?schema
+      ; Makes a local registry?
       [:schema {:registry {::schema ?schema}} ?schema])))
 
 (defn -collect

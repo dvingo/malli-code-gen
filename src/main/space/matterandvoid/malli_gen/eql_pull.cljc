@@ -1,5 +1,8 @@
 (ns space.matterandvoid.malli-gen.eql-pull
   "Generate EQL pull vectors from schemas
+  Like space.matterandvoid.malli-gen.eql
+  but uses options from schema properties
+
   EQL reference https://github.com/edn-query-language/eql#eql-for-selections"
   (:require
     [malli.core :as m]
@@ -73,6 +76,7 @@
   (let [children1 (map first (m/children (m/deref m1)))
         children2 (map first (m/children (m/deref m2)))]
     (= children1 children2)))
+
 
 (defn map->eql-pull-vector
   "Given a malli schema returns a query vector

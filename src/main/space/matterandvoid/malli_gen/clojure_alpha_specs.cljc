@@ -13,6 +13,7 @@
 
 
 (def coll-type->pred
+  "monomorphic collection types"
   {:vector 'vector?
    :set    'set?})
 ; malli also has :sequential which can be any kind of homogenous sequence
