@@ -35,20 +35,20 @@
    :space.matterandvoid.data-model.db/updated-at
    :space.matterandvoid.data-model.db/created-at])
 
-(deftest map->eql-pull-vector-test
-  (reg/register! task/task-schema)
-  (let [#_#_and-out* (sut/map->eql-pull-vector ::task/task2)
-        map-out*   (sut/map->eql-pull-vector
-                     [:schema {:registry @reg/registry-atom} ::task/task])
-        pull-depth 10
-        map-out2   (assoc-in map-out [3 ::task/sub-tasks] pull-depth)]
+#_(deftest map->eql-pull-vector-test
+    (reg/register! task/task-schema)
+    (let [#_#_and-out* (sut/map->eql-pull-vector ::task/task2)
+          map-out*   (sut/map->eql-pull-vector
+                       [:schema {:registry @reg/registry-atom} ::task/task])
+          pull-depth 10
+          map-out2   (assoc-in map-out [3 ::task/sub-tasks] pull-depth)]
 
-    (is (= map-out map-out*))
+      (is (= map-out map-out*))
 
-    (task/set-pull-depth! 10)
-    (is (= map-out2 (sut/map->eql-pull-vector [:schema {:registry @reg/registry-atom} ::task/task])))
+      (task/set-pull-depth! 10)
+      (is (= map-out2 (sut/map->eql-pull-vector [:schema {:registry @reg/registry-atom} ::task/task])))
 
-    #_(is (= and-out* and-out))))
+      #_(is (= and-out* and-out))))
 
 (comment
   ;; need to figure out how to pass a local registry with a ref-schema,
