@@ -9,8 +9,9 @@
 
  "Leaf schemas"
  "From the plethora of malli default schemas,"
- malli.core/predicate-schemas "," malli.core/class-schemas "(read RegExp),"
- "and" malli.core/type-schemas "can be considered as leaf schemas."
+ malli.core/predicate-schemas " (so all fns like some? int? etc),"
+ malli.core/class-schemas "(read RegExp),"
+ "and" malli.core/type-schemas " (like :nil, :int, :double) – can be considered as leaf schemas."
  "So, when you walk a graph – you don't recur into them, only emit prop."
  "E.g. if you generate a pull vector for a user entity"
  [:map [:username string?]] "then :username, being a leaf schema maps into"
