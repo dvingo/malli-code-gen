@@ -28,7 +28,13 @@ jobs:
         uses: DeLaGuardo/setup-clojure@3.2
         with: { cli: 1.10.3.822 }
 
-      - name: Execute tests
+      - name: Tests [Linux, MacOS]
+        if: ${{ matrix.os != 'windows-latest' }}
         #run: clojure -M:custom-malli-registry:dev:test:run-tests
         run: clojure -M:dev:test:run-tests
         shell: bash
+
+      - name: Tests [Windows]
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: clojure -M:dev:test:run-tests
+        shell: powershell
