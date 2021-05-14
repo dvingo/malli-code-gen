@@ -4,7 +4,7 @@
   (:require [malli.util :as mu]
             [malli.core :as m]
             [space.matterandvoid.malli-gen.test-schema2 :as ts2]
-            [space.matterandvoid.malli-gen.util2 :as u]))
+            [space.matterandvoid.malli-gen.util :as u]))
 
 (comment
   "Main members are:"
@@ -26,7 +26,7 @@
   #{:vector :sequential :set})
 
 
-(defn is-prop-atomic? [prop-name et-schema root-schema]
+(defn leaf-prop? [prop-name et-schema root-schema]
   ;(prn ::is-atomic prop-name et-schema root-schema)
   #_(assert (= :map (m/type et-schema))
             (str et-schema " isn't a :map, but a " (m/type et-schema)))
@@ -35,11 +35,11 @@
     (let [prop-schema (mu/get et-schema prop-name)
           schema? (= ::m/schema (m/type prop-schema))
           prop-schema (cond-> prop-schema schema? m/deref)]
-      (not (composite-schema-types (m/type prop-schema))))))
+      (u/leaf-schema? prop-schema))))
 
-(assert (is-prop-atomic? ::ts2/id -schema-map:task ts2/schema:task))
-(assert (not (is-prop-atomic? ::ts2/user -schema-map:task ts2/schema:task)))
-(assert (not (is-prop-atomic? ::ts2/subtasks -schema-map:task ts2/schema:task)))
+(assert (leaf-prop? ::ts2/id -schema-map:task ts2/schema:task))
+(assert (not (leaf-prop? ::ts2/user -schema-map:task ts2/schema:task)))
+(assert (not (leaf-prop? ::ts2/subtasks -schema-map:task ts2/schema:task)))
 
 
 (defn is-ref-coll?
@@ -61,7 +61,7 @@
 
 
 (defn ref-coll->reffed [ref-coll-schema]
-  (def s1 ref-coll-schema)
+  ;(def s1 ref-coll-schema)
   (-> ref-coll-schema
       (m/deref)
       (m/children) (first)
@@ -98,7 +98,7 @@
                ^malli.core/schema spec-item-schema
                :as entry]]
 
-           (if (is-prop-atomic? spec-item-id et-schema root-schema)
+           (if (leaf-prop? spec-item-id et-schema root-schema)
              spec-item-id
 
              ; nesting operation
@@ -158,21 +158,4 @@
 
 
 (comment
-
-  (schema->eql-pull -schema:task)
-
-  (m/deref
-    (mu/get
-      (m/deref (m/deref -schema:task))
-      ::ts2/id))
-
-  (-> (m/type (m/deref (m/deref -schema:task))))
-
-  (-> (m/deref (m/deref -schema:task))
-      (m/entries)
-      (nth 4)
-      (second))
-
-  (type (first (m/children -schema:task)))
-
   (m/children -schema:task))

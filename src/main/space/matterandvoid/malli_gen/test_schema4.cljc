@@ -26,7 +26,7 @@
    ::global?     boolean?
    ::updated-at  inst?
    ::user-prop-type [:enum :int :double :boolean]
-   ::goal-props [:map-of "string" [:tuple ::user-prop-type string?]]
+   ::goal-props [:map-of string? [:tuple ::user-prop-type string?]]
    ::created-at  inst?
    ::username    string?
    ::subtasks    [:vector [:ref ::task]]

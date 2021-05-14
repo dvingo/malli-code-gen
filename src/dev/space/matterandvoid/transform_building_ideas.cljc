@@ -18,9 +18,11 @@
 
  "Node schemas"
  "Most of" malli.core/base-schemas "will have bodies, so their transformation"
- "will require recursion. Base schemas are")
-#{:enum :schema, :orn :or :and, :ref :maybe :not, :sequential :tuple :vector :set
-  :map :map-of :re
-  :fn :function :=> :multi}
+ "will require recursion. Base schemas are"
+ #{:enum :schema, :orn :or :and, :ref :maybe :not, :sequential :tuple :vector :set
+   :map :map-of :re
+   :fn :function :=> :multi}
+ "You can see this in malli.clj-kondo ns, with the accept multimethod which"
+ "walks into walkable schemas, but for leaf schema returns a simple keyword.")
+ ; https://github.com/metosin/malli/blob/master/src/malli/clj_kondo.cljc)
 
-(set (keys (m/base-schemas)))

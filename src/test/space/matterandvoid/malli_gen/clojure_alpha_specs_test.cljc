@@ -4,7 +4,7 @@
     [malli.util :as mu]
     [malli.core :as m]
     [space.matterandvoid.malli-gen.clojure-alpha-specs :as spec-gen]
-    [space.matterandvoid.malli-gen.util2 :as u]
+    [space.matterandvoid.malli-gen.util :as u]
     [space.matterandvoid.malli-gen.test-schema3 :as ts3]))
 
 

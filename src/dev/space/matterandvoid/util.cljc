@@ -1,4 +1,5 @@
 (ns space.matterandvoid.util
+  ; todo make sure this won't overlap with the util ns from src, maybe name this dev-util?
   (:refer-clojure :exclude [uuid])
   (:require
     [malli.core :as m]

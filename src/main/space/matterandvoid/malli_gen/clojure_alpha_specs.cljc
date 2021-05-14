@@ -1,7 +1,7 @@
 (ns space.matterandvoid.malli-gen.clojure-alpha-specs
   "Generate clojure/spec-alpha2 specs from malli specs"
   (:require [malli.core :as m]
-            [space.matterandvoid.malli-gen.util2 :as u]
+            [space.matterandvoid.malli-gen.util :as u]
             [space.matterandvoid.malli-gen.test-schema2 :as ts2]
             [clojure.spec.alpha :as s]
             [malli.util :as mu]))
@@ -50,7 +50,7 @@
   "schema may be a malli schema ref or a predicate fn"
   [schema]
   (if (m/schema? schema)
-    (if (u/schema-atomic? schema)
+    (if (u/leaf-schema? schema)
       (m/form (m/deref schema))
       (sequential-schema->spec-def schema))
     schema))

@@ -1,12 +1,14 @@
 (ns ivan-play
   (:require [malli.core :as m]
-            [malli.clj-kondo :as mk]
             [malli.util :as mu]
+            [space.matterandvoid.malli-study.kondo :as mk]
             [crux.api :as crux]
-            [malli-code-gen.api :as mcg]
+            [space.matterandvoid.malli-gen.api :as mcg]
+            [space.matterandvoid.malli-gen.test-schema4 :as ts4]
             [malli.transform :as mt]
             [clojure.java.io :as io]
-            [crux.api :as crux])
+            [crux.api :as crux]
+            [space.matterandvoid.malli-gen.util :as u])
   (:import (java.util UUID)))
 
 ; aave – malli powered code checking for Clojure.
@@ -42,6 +44,9 @@
     ::user
     ::description
     [::global? {:optional true}]
+    [::user-props
+     [:map
+      [:other-props [:map [:prop1 [:map [:prop2 int?]]]]]]]
     [:sub-tasks {:optional true}
      [:vector [:ref ::task]]]
     [::updated-at {:optional true}]
@@ -72,9 +77,15 @@
      :gist    ""})
 
 
+(comment
+  (mk/transform schema:task))
 
 (mu/subschemas schema:task)
-(m/children schema:task)
+
+(-> (u/get-map-schema schema:task)
+    (mu/get ::user)
+    (m/deref))
+
 (m/entries schema:task)
 
 (m/type schema:task)
@@ -137,8 +148,7 @@
          :crux/index-store         (kv-store "data/dev/index-store")})))
 
 
-(defonce crux-node
-  (start-crux!))
+(defonce crux-node (atom nil))
 
 (defn stop-crux! []
   (.close crux-node))
@@ -157,8 +167,11 @@
 
 
 (comment
+
+  (reset! crux-node start-crux!)
+
   (crux/submit-tx
-    crux-node
+    @crux-node
     (let [child-uuid (UUID/randomUUID)]
 
       [[:crux.tx/put
@@ -174,12 +187,12 @@
           ::description "A parent task"}]]))
 
   (crux/q
-    (crux/db crux-node)
+    (crux/db @crux-node)
     {:find  [(list 'pull 'e (conj task-eql :crux.db/id))]
      :where '[[e :crux.db/id]]})
 
   (crux/q
-    (crux/db crux-node)
+    (crux/db @crux-node)
     {:find  [(list 'pull 'e (conj task-eql2 :crux.db/id))]
      :where '[[e :crux.db/id]]}))
 

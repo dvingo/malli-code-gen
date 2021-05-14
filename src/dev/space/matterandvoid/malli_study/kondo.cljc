@@ -5,7 +5,9 @@
 
 (declare transform)
 
-(defmulti accept (fn [name _schema _children _options] name) :default ::default)
+(defmulti accept
+  (fn [name _schema _children _options] name)
+  :default ::default)
 
 (defmethod accept ::default [_ _ _ _] :any)
 (defmethod accept 'any? [_ _ _ _] :any)
@@ -67,11 +69,15 @@
 (defmethod accept :or [_ _ _ _] :any) ;;??
 
 (defmethod accept ::m/val [_ _ children _] (first children))
+
 (defmethod accept :map [_ _ children _]
-  (let [{req true opt false} (->> children (group-by (m/-comp not :optional second)))
+  (let [{req true opt false}
+        (->> children (group-by (m/-comp not :optional second)))
         opt (apply array-map (mapcat (fn [[k _ s]] [k s]) opt))
         req (apply array-map (mapcat (fn [[k _ s]] [k s]) req))]
-    (cond-> {:op :keys}, (seq opt) (assoc :opt opt), (seq req) (assoc :req req))))
+    (cond-> {:op :keys},
+            (seq opt) (assoc :opt opt),
+            (seq req) (assoc :req req))))
 
 (defmethod accept :multi [_ _ _ _] :any) ;;??
 (defmethod accept :map-of [_ _ _ _] :map) ;;??
@@ -111,9 +117,16 @@
 (defmethod accept :union [_ schema _ options] (transform (m/deref schema) options))
 (defmethod accept :select-keys [_ schema _ options] (transform (m/deref schema) options))
 
-(defn- -walk [schema _ children options] (accept (m/type schema) schema children options))
+(defn accept* [schema-type schema children options]
+  ;(prn ::accept schema)
+  (accept schema-type schema children options))
 
-(defn -transform [?schema options] (m/walk ?schema -walk options))
+(defn- -walk [schema path children options]
+  (prn ::walk-path path)
+  (accept* (m/type schema) schema children options))
+
+(defn -transform [?schema options]
+  (m/walk ?schema -walk options))
 
 ;;
 ;; public api
@@ -139,13 +152,15 @@
       (fn [acc schema]
         (let [{:keys [input output arity min]} (m/-function-info schema)
               args (transform input)
-              ret (transform output)]
-          (conj acc (cond-> {:ns ns-name
-                             :name name
-                             :arity arity
-                             :args args
-                             :ret ret}
-                            (= arity :varargs) (assoc :min-arity min)))))
+              ret (transform output)
+              cur-fn-conf
+              (cond-> {:ns    ns-name
+                       :name  name
+                       :arity arity
+                       :args  args
+                       :ret   ret}
+                      (= arity :varargs) (assoc :min-arity min))]
+          (conj acc cur-fn-conf)))
       [] (m/children schema))))
 
 (defn collect

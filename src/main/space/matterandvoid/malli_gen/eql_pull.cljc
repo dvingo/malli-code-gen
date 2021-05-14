@@ -6,7 +6,7 @@
   EQL reference https://github.com/edn-query-language/eql#eql-for-selections"
   (:require
     [malli.core :as m]
-    [space.matterandvoid.malli-gen.util2 :as u])
+    [space.matterandvoid.malli-gen.util :as u])
   #?(:clj (:import [clojure.lang ExceptionInfo])))
 
 (comment

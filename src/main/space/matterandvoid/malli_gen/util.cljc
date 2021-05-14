@@ -1,4 +1,4 @@
-(ns space.matterandvoid.malli-gen.util2
+(ns space.matterandvoid.malli-gen.util
   (:require
     [malli.core :as m]
     [malli.util :as mu]
@@ -8,6 +8,10 @@
 
 (def composite-schema-types
   #{:vector :map :sequential :set ::m/schema :and})
+
+(def wal
+  #{:vector :map :sequential :set ::m/schema :and})
+
 
 (def malli-coll-types
   #{:vector :sequential :set})
@@ -77,7 +81,7 @@
       (ref-schema? (first (m/children s))))))
 
 
-(defn schema-atomic?
+(defn leaf-schema?
   "a single predicate like 'int? is considered an atomic schema"
   [schema]
   (let [comp-type? (composite-schema-types (m/type (m/deref schema)))
@@ -85,9 +89,14 @@
     ;(prn ::schema-atomic? comp-type? ref-vec?)
     (not (or comp-type? ref-vec?))))
 
-(assert (not (schema-atomic?
+(assert (not (leaf-schema?
                (-> (get-map-schema ts3/schema:task)
                    (mu/get ::ts3/tags)))))
+
+(defn walkable-schema?
+  "is schema walkable?"
+  [schema]
+  pop)
 
 
 (defn map-schemas-equal?
