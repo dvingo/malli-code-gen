@@ -4,7 +4,7 @@
     [malli.util :as mu]
     [space.matterandvoid.malli-gen.test-schema2 :as ts2]
     [space.matterandvoid.malli-gen.test-schema3 :as ts3])
-  (:import (clojure.lang ExceptionInfo)))
+  #?(:clj (:import (clojure.lang ExceptionInfo))))
 
 (def composite-schema-types
   #{:vector :map :sequential :set ::m/schema :and})
