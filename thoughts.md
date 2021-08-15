@@ -90,6 +90,10 @@ https://juxt-oss.zulipchat.com/#narrow/stream/194466-crux/topic/Querying.20for.2
 
 https://github.com/kwrooijen/gungnir
 
+generate pathom resolvers from introspecting a SQL DB:
+
+https://github.com/ReilySiegel/EQLizr
+
 low code env to check out, esp their use of react components:
 
 https://github.com/lowdefy/lowdefy
