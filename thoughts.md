@@ -88,6 +88,8 @@ https://juxt-oss.zulipchat.com/#narrow/stream/194466-crux/topic/Querying.20for.2
 
 # Inspiration & prior art
 
+https://github.com/kwrooijen/gungnir
+
 low code env to check out, esp their use of react components:
 
 https://github.com/lowdefy/lowdefy
