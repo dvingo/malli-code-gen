@@ -1,5 +1,6 @@
 (ns space.matterandvoid.malli-gen.test-schema4
-  "Dev scaffolding, to be removed later")
+  "Dev scaffolding, to be removed later"
+  (:require [malli.core :as m]))
 
 
 (def e-types
@@ -56,9 +57,27 @@
 (def schema:task
   "spec with external registry
   satisfies Schema"
-  [:schema
-   {:registry registry:main}
-   ::task])
+  (m/schema
+    [:schema
+     {:registry registry:main}
+     ::task]))
+
+
+(m/validate schema:task {::id 11})
+
+(m/type schema:task)
+(type schema:task)
+
+(m/type (m/deref-all schema:task))
+(m/form (m/deref-all schema:task))
+(m/deref-all schema:task)
+
+(m/children (m/deref (m/deref schema:task)))
+(m/deref (m/deref schema:task))
+(m/deref-all schema:task)
+(satisfies? m/RefSchema schema:task)
+(satisfies? m/RefSchema (m/deref schema:task))
+
 
 (def schema:user
   "spec with external registry
